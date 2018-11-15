@@ -14,6 +14,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class DataService extends Service {
     public DataService() {
@@ -34,10 +35,14 @@ public class DataService extends Service {
     private IBinder binder = new DataServiceBinder();
 
 
+    FirebaseFirestore db;
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        database=FirebaseDatabase.getInstance();
-        reference=database.getReference().child("WishLists");
+        db= FirebaseFirestore.getInstance();
+
+        //database=FirebaseDatabase.getInstance();
+        //reference=database.getReference().child("WishLists");
 
         return START_STICKY;
 

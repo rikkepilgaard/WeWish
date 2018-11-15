@@ -22,16 +22,24 @@
         android:id="@+id/username"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:hint="@string/username"
+        android:hint="@string/email"
         android:layout_below="@+id/userimage"
         android:layout_centerHorizontal="true"/>
+    <EditText
+        android:id="@+id/password"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:hint="@string/password"
+        android:layout_below="@+id/username"
+        android:layout_centerHorizontal="true"
+        />
 
     <Button
         android:id="@+id/login"
         android:text="@string/btLogin"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/username"
+        android:layout_below="@+id/password"
         android:layout_centerHorizontal="true"
         android:onClick="loginToAccount"/>
     <Button
