@@ -1,11 +1,10 @@
 <resources>
     <string name="app_name">WeWish</string>
-    <string name="email">Email</string>
+    <string name="username">Username</string>
     <string name="btLogin">Login</string>
     <string name="btCreate">Create new user</string>
     <string name="alreadyExist">Username is taken. Choose another one :-)</string>
     <string name="wrongUsername">User does not exist. Try again :-)</string>
-    <string name="empty">You need to enter your username</string>
     <string name="password">Password</string>
 
     <!-- TODO: Remove or change this placeholder text -->
