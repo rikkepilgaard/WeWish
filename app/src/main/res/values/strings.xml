@@ -6,6 +6,11 @@
     <string name="alreadyExist">Username is taken. Choose another one :-)</string>
     <string name="wrongUsername">User does not exist. Try again :-)</string>
     <string name="password">Password</string>
+    <string name="email">Email</string>
+    <string name="errorEmail">Please enter Email</string>
+    <string name="errorPassword">Please enter password</string>
+    <string name="birthdate">Select your birthdate</string>
+    <string name="done">Done</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
