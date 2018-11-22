@@ -1,13 +1,18 @@
 package com.example.wewish;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ExpandableListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 
@@ -18,6 +23,8 @@ public class OverviewFragment extends Fragment {
 
     private ExpandableListView listView;
     private ExpandableListAdapter adapter;
+    private Button btnAddWish;
+    private Button btnAddWishList;
 
     public OverviewFragment() {
         // Required empty public constructor
@@ -50,7 +57,61 @@ public class OverviewFragment extends Fragment {
             }
         });
 
+        btnAddWish = view.findViewById(R.id.btnAddWish);
+        btnAddWish.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openNewWishAlert();
+            }
+        });
+
+        btnAddWishList = view.findViewById(R.id.btnAddWishList);
+        btnAddWishList.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openNewWishListAlert();
+            }
+        });
+
         return view;
+    }
+
+    private void openNewWishListAlert() {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                getActivity());
+
+        // set title
+        alertDialogBuilder.setTitle(getString(R.string.add_wish_list_title));
+        LayoutInflater inflater = getLayoutInflater();
+        final View v = inflater.inflate(R.layout.alert_new_wish, null);
+        alertDialogBuilder.setView(v);
+
+        // set dialog message
+        alertDialogBuilder
+                .setMessage(getString(R.string.add_wish_list_description))
+                .setCancelable(false)
+                .setPositiveButton(getString(R.string.add),new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog,int id) {
+                        EditText edtEmail = v.findViewById(R.id.edtEmail);
+                        String email = edtEmail.getText().toString();
+                        //dataService.getWishListFromFirebase(email);
+                    }
+                })
+                .setNegativeButton(getString(R.string.cancel),new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog,int id) {
+                        dialog.cancel();
+                    }
+                });
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
+    }
+
+    private void openNewWishAlert() {
+
     }
 
     private void initData() {
