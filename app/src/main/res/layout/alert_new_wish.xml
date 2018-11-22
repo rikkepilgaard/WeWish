@@ -1,14 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical" >
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
 
-    <EditText
-        android:id="@+id/edtEmail"
+    <TextView
+        android:id="@+id/txtWishNameAlert"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/enter_email"/>
+        android:text="What is your wish?"/>
+    <EditText
+        android:id="@+id/editWishNameAlert"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
+
+    <TextView
+        android:id="@+id/txtPriceAlert"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Do you know the price?"/>
+
+    <EditText
+        android:id="@+id/editPriceAlert"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    <TextView
+        android:id="@+id/txtPriorityAlert"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="How much do you want the wish?"/>
+    <EditText
+        android:id="@+id/editPriorityAlert"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    <TextView
+        android:id="@+id/txtCommentsAlert"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add comments to your wish"/>
+    <EditText
+        android:id="@+id/editCommentsAlert"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    <TextView
+        android:id="@+id/txtUrlAlert"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="You can insert an url if you wish.."/>
+    <EditText
+        android:id="@+id/editUrlAlert"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
 </LinearLayout>

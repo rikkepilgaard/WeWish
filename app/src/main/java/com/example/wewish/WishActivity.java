@@ -74,6 +74,7 @@ public class WishActivity extends AppCompatActivity implements
             finishAffinity();
         }
     }
+
     public void signout(View v){
         FirebaseAuth.getInstance().signOut();
         finish();
