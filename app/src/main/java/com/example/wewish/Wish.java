@@ -1,6 +1,8 @@
 package com.example.wewish;
 
-public class Wish {
+import java.io.Serializable;
+
+public class Wish implements Serializable {
     private String wishName, priority, comments, urlName, price;
 
     public Wish(String wishName, String priority, String comments, String urlName, String price) {

@@ -12,16 +12,9 @@ import android.widget.ExpandableListView;
 import java.util.ArrayList;
 
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link OverviewFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link OverviewFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class OverviewFragment extends Fragment {
 
+    private OnOverviewFragmentInteractionListener mListener;
 
     private ExpandableListView listView;
     private ExpandableListAdapter adapter;
@@ -48,7 +41,10 @@ public class OverviewFragment extends Fragment {
             @Override
             public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
 
-
+                if (mListener != null) {
+                    Wish wish = (Wish)adapter.getChild(groupPosition,childPosition);
+                    mListener.onOverviewFragmentInteraction(wish);
+                }
 
                 return true;
             }
@@ -86,4 +82,28 @@ public class OverviewFragment extends Fragment {
         adapter = new ExpandableListAdapter(getContext(),users);
         listView.setAdapter(adapter);
     }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnOverviewFragmentInteractionListener) {
+            mListener = (OnOverviewFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
+    }
+
+
+    public interface OnOverviewFragmentInteractionListener {
+
+        void onOverviewFragmentInteraction(Wish wish);
+    }
+
 }
