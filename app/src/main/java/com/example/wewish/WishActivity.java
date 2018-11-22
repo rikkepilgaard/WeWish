@@ -5,7 +5,11 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.FrameLayout;
+
+import com.google.firebase.auth.FirebaseAuth;
 
 public class WishActivity extends AppCompatActivity implements
         OverviewFragment.OnOverviewFragmentInteractionListener,
@@ -14,6 +18,7 @@ public class WishActivity extends AppCompatActivity implements
     public static FragmentManager fragmentManager;
     private FragmentTransaction fragmentTransaction;
     private FrameLayout container;
+    private Button signoutButton;
 
 
 
@@ -25,6 +30,7 @@ public class WishActivity extends AppCompatActivity implements
         fragmentManager = getSupportFragmentManager();
 
         container = findViewById(R.id.container);
+        signoutButton=findViewById(R.id.signout);
 
         if(container!=null){
             if(savedInstanceState!=null){
@@ -67,5 +73,9 @@ public class WishActivity extends AppCompatActivity implements
         }else {
             finishAffinity();
         }
+    }
+    public void signout(View v){
+        FirebaseAuth.getInstance().signOut();
+        finish();
     }
 }

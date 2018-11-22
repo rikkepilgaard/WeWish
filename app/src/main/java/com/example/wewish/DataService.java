@@ -128,9 +128,10 @@ public class DataService extends Service {
     }
 
     public void checkForBirthday(){
-        currentUser=new CurrentUser();
-        String user = currentUser.getCurrentUser().getEmail();
-        DocumentReference docRef = db.collection("users").document(user);
+//        currentUser=new CurrentUser();
+//        if(currentUser!=null){
+//        String user = currentUser.getCurrentUser().getEmail();}
+        //DocumentReference docRef = db.collection("users").document(user);
         /*docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
