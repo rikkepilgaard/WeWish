@@ -28,6 +28,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -123,8 +124,8 @@ public class DataService extends Service {
     public void saveNewUser(final String email,final String username, final String birthdate){
     Map<String,Object> user = new HashMap<>();
     user.put("email",email);
-    user.put("username",username);
-    user.put("birthdate",birthdate);
+    user.put("userName",username);
+    user.put("birthDate",birthdate);
 
         db.collection("users").document(email).set(user)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -163,6 +164,7 @@ public class DataService extends Service {
                     }
                 });
     }
+
     public void login(String email){
         DocumentReference docRef = db.collection("users").document(email);
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -204,25 +206,53 @@ public class DataService extends Service {
         });*/
 
     }
-    public void getWishListFromFirebase(String email){
-        db.collection("users").document(email).collection("wishes").get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+
+    public void getWishListFromFirebase(final String email){
+        db.collection("users").document(email).get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                     @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Log.d(TAG, document.getId() + " => " + document.getData());
-                                //Her skal der laves en liste af ønsker til den pågælende person
-                            }
-                        } else {
-                            Log.d(TAG, "Error getting documents: ", task.getException());
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if(documentSnapshot.exists()) {
+                            User user = documentSnapshot.toObject(User.class);
+                            db.collection("users").document("rp@hotmail.com").get()
+                                    .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                        @Override
+                                        public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                            final User user = documentSnapshot.toObject(User.class);
+                                            db.collection("users").document(user.getEmail()).collection("wishes").get()
+                                                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                                        @Override
+                                                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                                            if (task.isSuccessful()) {
+                                                                ArrayList<Wish> wishList = new ArrayList<>();
+                                                                for (QueryDocumentSnapshot document : task.getResult()) {
+                                                                    Log.d(TAG, document.getId() + " => " + document.getData());
+                                                                    Wish wish = document.toObject(Wish.class);
+                                                                    wishList.add(wish);
+                                                                }
+                                                                user.setWishList(wishList);
+                                                            } else {
+                                                                Log.d(TAG, "Error getting documents: ", task.getException());
+                                                            }
+
+                                                        }
+
+                                                    });
+
+
+                                        }
+                                    });
+
+                            addSubscriber(email);
                         }
-
+                        else{
+                            Toast.makeText(DataService.this,"Email does not exist", Toast.LENGTH_LONG).show();
+                        }
                     }
-
                 });
 
     }
+
     public void addWishToWishList(Wish wish){
         String email=mAuth.getCurrentUser().getEmail();
         db.collection("users").document(email).collection("wishes").document().set(wish)
@@ -231,6 +261,26 @@ public class DataService extends Service {
                     public void onSuccess(Void avoid) {
                         Log.d(TAG,"Wish added");
                         //Her skal der opdateres i expandable list
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error adding document", e);
+                    }
+                });
+
+    }
+
+    public void  addSubscriber(String email){
+        String myEmail= mAuth.getCurrentUser().getEmail();
+        HashMap<String, String> hash = new HashMap<>();
+        hash.put("email",email);
+        db.collection("users").document(myEmail).collection("subscribers").document().set(hash)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void avoid) {
+                        Log.d(TAG,"Subscriber added");
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
