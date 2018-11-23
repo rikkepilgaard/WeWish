@@ -36,8 +36,6 @@ public class OverviewFragment extends Fragment {
     private ExpandableListAdapter adapter;
     private Button btnAddWish;
     private Button btnAddWishList;
-    FirebaseFirestore db;
-    private FirebaseAuth mAuth;
 
     public OverviewFragment() {
         // Required empty public constructor
@@ -52,9 +50,6 @@ public class OverviewFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
-        db=FirebaseFirestore.getInstance();
-        mAuth = FirebaseAuth.getInstance();
 
         View view = inflater.inflate(R.layout.fragment_overview, container, false);
         listView = view.findViewById(R.id.listViewExpandable);
@@ -110,7 +105,7 @@ public class OverviewFragment extends Fragment {
                     public void onClick(DialogInterface dialog,int id) {
                         EditText edtEmail = v.findViewById(R.id.edtEmail);
                         String email = edtEmail.getText().toString();
-                        getWishListFromFirebase(email);
+                        mListener.getWishListFromFirebase(email);
                     }
                 })
                 .setNegativeButton(getString(R.string.cancel),new DialogInterface.OnClickListener() {
@@ -153,7 +148,7 @@ public class OverviewFragment extends Fragment {
                                 url.getText().toString(),
                                 price.getText().toString());
 
-                        addWishToWishlist(wish);
+                        mListener.addWishToWishList(wish);
                     }
                 })
                 .setNegativeButton(getString(R.string.cancel),new DialogInterface.OnClickListener() {
@@ -219,47 +214,9 @@ public class OverviewFragment extends Fragment {
 
 
     public interface OnOverviewFragmentInteractionListener {
-
         void onOverviewFragmentInteraction(Wish wish);
-    }
-
-    public void getWishListFromFirebase(String email){
-        db.collection("users").document(email).collection("wishes").get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isSuccessful()) {
-                    for (QueryDocumentSnapshot document : task.getResult()) {
-                        Log.d(TAG, document.getId() + " => " + document.getData());
-                        //Her skal der laves en liste af ønsker til den pågælende person
-                    }
-                } else {
-                    Log.d(TAG, "Error getting documents: ", task.getException());
-                }
-
-            }
-
-        });
-
-    }
-
-    public void addWishToWishlist(Wish wish){
-        String email=mAuth.getCurrentUser().getEmail();
-        db.collection("users").document(email).collection("wishes").document().set(wish)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void avoid) {
-                        Log.d(TAG,"Wish added");
-                        //Her skal der opdateres i expandable list
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w(TAG, "Error adding document", e);
-                    }
-                });
-
+        void getWishListFromFirebase(String email);
+        void addWishToWishList(Wish wish);
     }
 
 

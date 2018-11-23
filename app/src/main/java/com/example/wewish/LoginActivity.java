@@ -45,16 +45,11 @@ public class LoginActivity extends AppCompatActivity {
     private boolean dataServiceBound = false;
     private DataService dataService;
     private DatePickerDialog.OnDateSetListener dateSetListener;
-    private FirebaseAuth mAuth;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        mAuth = FirebaseAuth.getInstance();
-        checkIfUserisLoggedIn();
         Email = findViewById(R.id.email);
         passWord = findViewById(R.id.password);
         username=findViewById(R.id.username);
@@ -118,7 +113,7 @@ public class LoginActivity extends AppCompatActivity {
                     return;
                 }
 
-                createUser(email,password);
+                dataService.createUser(email,password,username.getText().toString(),date.getText().toString());
 
             }
         });
@@ -138,26 +133,18 @@ public class LoginActivity extends AppCompatActivity {
                     return;
                 }
 
-                signIn(email,password);
-
-
+                dataService.signIn(email,password);
             }
         });
 
     }
-    public void checkIfUserisLoggedIn(){
-        if(mAuth.getCurrentUser()!=null){
-            Intent intent= new Intent(LoginActivity.this,WishActivity.class);
-            startActivity(intent);
-        }
 
-    }
 
     @Override
     protected void onResume() {
         super.onResume();
         IntentFilter dataFilter = new IntentFilter();
-        dataFilter.addAction("startIntent");
+        dataFilter.addAction("wishActivity");
         LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver,dataFilter);
     }
 
@@ -166,10 +153,6 @@ public class LoginActivity extends AppCompatActivity {
         super.onStart();
         startServices();
         bindToServices();
-
-        // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-       // updateUI(currentUser);
     }
 
     @Override
@@ -179,65 +162,6 @@ public class LoginActivity extends AppCompatActivity {
         unbindServices();
     }
 
-    public void createUser(String email, String password){
-
-        mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d(TAG, "createUserWithEmail:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            dataService.saveNewUser(Email.getText().toString(),username.getText().toString(),date.getText().toString());
-                            startActivity(new Intent(LoginActivity.this, WishActivity.class));
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            Log.w(TAG, "createUserWithEmail:failure", task.getException());
-                            Toast.makeText(LoginActivity.this, "Creating user failed.",
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
-
-                }
-
-
-    public void signIn(String email, String password){
-        mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d(TAG, "signInWithEmail:success");
-                            Toast.makeText(getApplicationContext(),"it worked",Toast.LENGTH_SHORT);
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            startWishActivity();
-                            dataService.login(Email.getText().toString());
-
-
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            Log.w(TAG, "signInWithEmail:failure", task.getException());
-                            Toast.makeText(LoginActivity.this, "Sign in failed.",
-                                    Toast.LENGTH_SHORT).show();
-
-                        }
-
-                        // ...
-                    }
-                });
-    }
-
-
-
-
-
-
-
-
-
 
 
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
@@ -245,19 +169,15 @@ public class LoginActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG,"Broadcast received: " + intent.getAction());
             switch (intent.getAction()){
-                case "startIntent": startWishActivity();
+                case "wishActivity":
+                    Intent intent1= new Intent(LoginActivity.this,WishActivity.class);
+                    startActivity(intent1);
             }
         }
     };
-    public void startWishActivity(){
-        Intent intent= new Intent(LoginActivity.this,WishActivity.class);
-        startActivity(intent);
-    }
-
     private void startServices(){
         Intent dataIntent = new Intent(LoginActivity.this,DataService.class);
         startService(dataIntent);
-
     }
 
     private void bindToServices(){
@@ -277,6 +197,7 @@ public class LoginActivity extends AppCompatActivity {
         public void onServiceConnected(ComponentName name, IBinder service) {
             DataService.DataServiceBinder dataBinder = (DataService.DataServiceBinder) service;
             dataService = dataBinder.getService();
+            dataService.checkIfUserisLoggedIn();
             dataServiceBound = true;
             Log.d(TAG,"Connected to DataService");
         }
