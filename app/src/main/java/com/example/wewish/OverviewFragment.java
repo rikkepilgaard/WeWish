@@ -167,7 +167,7 @@ public class OverviewFragment extends Fragment {
 
     private void initData() {
 
-        Wish wish = new Wish("Bil1","Høj","Den vil jeg gerne ha","Her.dk","300 kr");
+        Wish wish = new Wish("Bil1","Høj","Den vil jeg gerne ha","google.com","300 kr");
         Wish wish1 = new Wish("Bil2","Høj","Den vil rigtig jeg gerne ha","Her.dk","300 kr");
         Wish wish2 = new Wish("Bil3","Høj","Den vil jeg utrolig gerne ha","Her.dk","300 kr");
         Wish wish3 = new Wish("Bil4","Høj","Den vil jeg særligt gerne ha","Her.dk","300 kr");

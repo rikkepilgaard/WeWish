@@ -1,6 +1,7 @@
 package com.example.wewish;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -51,7 +52,7 @@ public class DetailsFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_details, container, false);
 
-        Wish wish = (Wish)getArguments().getSerializable("wish");
+        final Wish wish = (Wish)getArguments().getSerializable("wish");
 
         txtWishName = view.findViewById(R.id.txtWishNameChange);
         txtWishName.setText(wish.getWishName());
@@ -71,8 +72,28 @@ public class DetailsFragment extends Fragment {
                 mListener.previousFragment();
             }
         });
+
         btnDelete = view.findViewById(R.id.btnDelete);
+        btnDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mListener.deleteWish(wish);
+            }
+        });
+
         btnOpenUrl = view.findViewById(R.id.btnOpenUrl);
+        btnOpenUrl.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String url = wish.getUrlName();
+
+                if (!url.startsWith("http://") && !url.startsWith("https://"))
+                    url = "http://" + url;
+
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                startActivity(browserIntent);
+            }
+        });
 
         return view;
     }
@@ -100,5 +121,7 @@ public class DetailsFragment extends Fragment {
     public interface OnDetailsFragmentInteractionListener {
 
         void previousFragment();
+        void deleteWish(Wish wish);
+
     }
 }

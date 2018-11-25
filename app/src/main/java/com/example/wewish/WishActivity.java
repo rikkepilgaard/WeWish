@@ -133,6 +133,8 @@ private String TAG ="WishActivity";
 
     }
 
-
+    public void deleteWish(Wish wish){
+        dataService.deleteWish(wish);
+    }
 
 }

@@ -9,11 +9,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="What is your wish?"/>
+
     <EditText
         android:id="@+id/editWishNameAlert"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
+        android:layout_height="wrap_content"
+        android:textIsSelectable="true" />
 
     <TextView
         android:id="@+id/txtPriceAlert"
@@ -24,33 +25,44 @@
     <EditText
         android:id="@+id/editPriceAlert"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:textIsSelectable="true"/>
+
     <TextView
         android:id="@+id/txtPriorityAlert"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="How much do you want the wish?"/>
+
     <EditText
         android:id="@+id/editPriorityAlert"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:textIsSelectable="true"/>
+
     <TextView
         android:id="@+id/txtCommentsAlert"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Add comments to your wish"/>
+
     <EditText
         android:id="@+id/editCommentsAlert"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:textIsSelectable="true"/>
+
     <TextView
         android:id="@+id/txtUrlAlert"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="You can insert an url if you wish.."/>
+
     <EditText
         android:id="@+id/editUrlAlert"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:textIsSelectable="true"/>
+
 
 </LinearLayout>

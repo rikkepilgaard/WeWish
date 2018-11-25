@@ -330,6 +330,24 @@ public class DataService extends Service {
 
     }
 
+    public void deleteWish(Wish wish){
+        String myEmail= mAuth.getCurrentUser().getEmail();
+        db.collection("users").document(myEmail).collection("wishes").document(wish.getWishName())
+                .delete()
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "DocumentSnapshot successfully deleted!");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error deleting document", e);
+                    }
+                });
+    }
+
 
 
 
