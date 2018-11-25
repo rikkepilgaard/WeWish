@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -48,13 +49,15 @@ public class DetailsFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_details, container, false);
 
+        assert getArguments() != null;
         final Wish wish = (Wish)getArguments().getSerializable("wish");
 
         txtWishName = view.findViewById(R.id.txtWishNameChange);
+        assert wish != null;
         txtWishName.setText(wish.getWishName());
         txtPrice = view.findViewById(R.id.txtPriceChange);
         txtPrice.setText(wish.getPrice());

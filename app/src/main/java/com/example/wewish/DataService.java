@@ -40,8 +40,10 @@ public class DataService extends Service {
     private FirebaseAuth mAuth;
     CurrentUser currentUser;
     ArrayList<User> othersUsers;
+
     public DataService() {
     }
+
     @Override
     public IBinder onBind(Intent intent) {
         Log.d(TAG, "onBind");
@@ -97,7 +99,6 @@ public class DataService extends Service {
             login(mAuth.getCurrentUser().getEmail());
             sendBroadcast();
         }
-
     }
 
     public void createUser(final String email, String password, final String username, final String date){
@@ -331,6 +332,9 @@ public class DataService extends Service {
     }
 
     public void deleteWish(Wish wish){
+
+        ///TROR IKKE DENNE METODE VIRKER!
+
         String myEmail= mAuth.getCurrentUser().getEmail();
         db.collection("users").document(myEmail).collection("wishes").document(wish.getWishName())
                 .delete()
