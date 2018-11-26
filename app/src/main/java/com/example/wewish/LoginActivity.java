@@ -175,6 +175,8 @@ public class LoginActivity extends AppCompatActivity {
             }
         }
     };
+
+
     private void startServices(){
         Intent dataIntent = new Intent(LoginActivity.this,DataService.class);
         startService(dataIntent);

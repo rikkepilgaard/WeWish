@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -29,9 +30,10 @@ import java.util.Map;
 
 
 public class OverviewFragment extends Fragment {
+    private static final String TAG ="OverviewFragment";
 
     private OnOverviewFragmentInteractionListener mListener;
-    private String TAG ="OverviewFragment";
+
     private ExpandableListView listView;
     private ExpandableListAdapter adapter;
     private Button btnAddWish;
@@ -53,7 +55,7 @@ public class OverviewFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_overview, container, false);
         listView = view.findViewById(R.id.listViewExpandable);
-        initData();
+        //initData();
 
         listView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
@@ -83,6 +85,7 @@ public class OverviewFragment extends Fragment {
                 openNewWishListAlert();
             }
         });
+
 
         return view;
     }
@@ -165,9 +168,9 @@ public class OverviewFragment extends Fragment {
 
     }
 
-    private void initData() {
+    public void initData(ArrayList<User> users) {
 
-        Wish wish = new Wish("Bil1","Høj","Den vil jeg gerne ha","google.com","300 kr");
+    /*    Wish wish = new Wish("Bil1","Høj","Den vil jeg gerne ha","google.com","300 kr");
         Wish wish1 = new Wish("Bil2","Høj","Den vil rigtig jeg gerne ha","Her.dk","300 kr");
         Wish wish2 = new Wish("Bil3","Høj","Den vil jeg utrolig gerne ha","Her.dk","300 kr");
         Wish wish3 = new Wish("Bil4","Høj","Den vil jeg særligt gerne ha","Her.dk","300 kr");
@@ -190,6 +193,7 @@ public class OverviewFragment extends Fragment {
         users.add(user1);
         users.add(user2);
         users.add(user3);
+        */
 
         adapter = new ExpandableListAdapter(getContext(),users);
         listView.setAdapter(adapter);

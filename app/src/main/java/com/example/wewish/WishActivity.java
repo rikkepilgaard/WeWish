@@ -1,14 +1,17 @@
 package com.example.wewish;
 
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,16 +27,25 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class WishActivity extends AppCompatActivity implements
         OverviewFragment.OnOverviewFragmentInteractionListener,
         DetailsFragment.OnDetailsFragmentInteractionListener{
-private String TAG ="WishActivity";
+
+
+    private String TAG ="WishActivity";
     public static FragmentManager fragmentManager;
     private FragmentTransaction fragmentTransaction;
     private FrameLayout container;
     private Button signoutButton;
     private DataService dataService;
     private boolean dataServiceBound;
+
+    private OverviewFragment overviewFragment;
+
+    private ArrayList<User> users;
 
 
 
@@ -46,13 +58,15 @@ private String TAG ="WishActivity";
         container = findViewById(R.id.container);
         signoutButton=findViewById(R.id.signout);
 
+        users = new ArrayList<>();
+
         if(container!=null){
             if(savedInstanceState!=null){
                 return;
             }
-            OverviewFragment fragment = new OverviewFragment();
+            overviewFragment = new OverviewFragment();
             fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.container,fragment,"replace");
+            fragmentTransaction.replace(R.id.container,overviewFragment,"replace");
             fragmentTransaction.addToBackStack(null);
             fragmentTransaction.commit();
         }
@@ -63,6 +77,33 @@ private String TAG ="WishActivity";
         bindToService();
         super.onStart();
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        IntentFilter dataFilter = new IntentFilter();
+        dataFilter.addAction("newdata");
+        dataFilter.addAction("wishActivity");
+        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver,dataFilter);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
+        unbindServices();
+    }
+
+    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG,"Broadcast received: " + intent.getAction());
+            switch (intent.getAction()){
+                case "newdata":
+                    updateUserList();
+            }
+        }
+    };
 
     @Override
     public void onOverviewFragmentInteraction(Wish wish) {
@@ -110,12 +151,30 @@ private String TAG ="WishActivity";
         }
     }
 
+    private void updateUserList(){
+        users = dataService.getUserList();
+
+        User currentUser = users.get(0);
+        List<String> subscribers = currentUser.getSubscriberList();
+        if(subscribers!=null) {
+            for (String subscriber : subscribers) {
+                dataService.addNewWishList(subscriber);
+
+            }
+        }
+        overviewFragment.initData(dataService.getUserList());
+    }
+
+
     private ServiceConnection dataConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             DataService.DataServiceBinder dataBinder = (DataService.DataServiceBinder) service;
             dataService = dataBinder.getService();
             dataServiceBound = true;
+
+            //updateUserList();
+
             Log.d(TAG,"Connected to DataService");
         }
 
@@ -125,16 +184,20 @@ private String TAG ="WishActivity";
         }
     };
     public void getWishListFromFirebase(String email){
-       dataService.getWishListFromFirebase(email);
+       dataService.addNewWishList(email);
     }
 
     public void addWishToWishList(Wish wish){
-        dataService.addWishToWishList(wish);
+        dataService.addWish(wish);
 
     }
 
     public void deleteWish(Wish wish){
         dataService.deleteWish(wish);
+    }
+
+    public void deleteWishList(String email){
+        dataService.deleteSubscriber(email);
     }
 
 }

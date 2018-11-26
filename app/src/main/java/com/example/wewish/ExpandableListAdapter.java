@@ -5,7 +5,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -13,12 +16,10 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
 
     private Context context;
     private ArrayList<User> userNameList;
-    //private HashMap<User, ArrayList<Wish>> listHashMap;
 
     public ExpandableListAdapter(Context context, ArrayList<User> userNameList) {
         this.context = context;
         this.userNameList = userNameList;
-        //this.listHashMap = listHashMap;
     }
 
     @Override
@@ -38,7 +39,6 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
 
     @Override
     public Object getChild(int groupPosition, int childPosition) {
-        //return listHashMap.get(userNameList.get(groupPosition)).get(childPosition);
 
         User user = userNameList.get(groupPosition);
         Wish wish = user.getWishList().get(childPosition);
@@ -63,9 +63,9 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
     }
 
     @Override
-    public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
+    public View getGroupView(final int groupPosition, boolean isExpanded, View convertView, final ViewGroup parent) {
 
-        User user = userNameList.get(groupPosition);
+        final User user = userNameList.get(groupPosition);
 
         if(convertView == null) {
             LayoutInflater inflater = (LayoutInflater) this.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -84,6 +84,17 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
             number = user.getWishList().size();
         }
         txtNumberWishes.setText(String.valueOf(number));
+
+        ImageButton btnDeleteList = convertView.findViewById(R.id.btnDeleteList);
+        btnDeleteList.setFocusable(false);
+        btnDeleteList.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                ((WishActivity)context).deleteWishList(user.getEmail());
+                Toast.makeText(context,"Trykket på " + groupPosition,Toast.LENGTH_LONG).show();
+            }
+        });
 
         return convertView;
     }

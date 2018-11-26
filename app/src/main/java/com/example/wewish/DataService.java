@@ -49,6 +49,8 @@ public class DataService extends Service {
         Log.d(TAG, "onBind");
         return binder;
     }
+
+
     public class DataServiceBinder extends Binder {
         DataService getService() {
             return DataService.this;
@@ -66,6 +68,10 @@ public class DataService extends Service {
         running=true;
         BirthdayTask = new AsyncTaskStart();
         BirthdayTask.execute();
+
+        othersUsers = new ArrayList<>();
+
+        getCurrentUserFromFirebase();
 
         return START_STICKY;
 
@@ -88,17 +94,11 @@ public class DataService extends Service {
         }
     }
 
-    public void sendBroadcast(){
+    public void sendBroadcast(String action){
         Intent broadcastIntent = new Intent();
-        broadcastIntent.setAction("wishActivity");
+        broadcastIntent.setAction(action);
         LocalBroadcastManager.getInstance(DataService.this).sendBroadcast(broadcastIntent);
         Log.d(TAG,"Broadcast sent");
-    }
-    public void checkIfUserisLoggedIn(){
-        if(mAuth.getCurrentUser()!=null){
-            login(mAuth.getCurrentUser().getEmail());
-            sendBroadcast();
-        }
     }
 
     public void createUser(final String email, String password, final String username, final String date){
@@ -111,7 +111,7 @@ public class DataService extends Service {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "createUserWithEmail:success");
                             saveNewUser(email,username,date);
-                            sendBroadcast();
+                            sendBroadcast("wishActivity");
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "createUserWithEmail:failure", task.getException());
@@ -123,12 +123,11 @@ public class DataService extends Service {
 
     }
 
-
     public void saveNewUser(final String email,final String username, final String birthdate){
-    Map<String,Object> user = new HashMap<>();
-    user.put("email",email);
-    user.put("userName",username);
-    user.put("birthDate",birthdate);
+        User user = new User();
+        user.setEmail(email);
+        user.setUserName(username);
+        user.setBirthDate(birthdate);
 
         db.collection("users").document(email).set(user)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -154,7 +153,7 @@ public class DataService extends Service {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithEmail:success");
-                            sendBroadcast();
+                            sendBroadcast("wishActivity");
                             login(email);
                         } else {
                             // If sign in fails, display a message to the user.
@@ -168,22 +167,181 @@ public class DataService extends Service {
                 });
     }
 
+    public void checkIfUserisLoggedIn(){
+        if(mAuth.getCurrentUser()!=null){
+            login(mAuth.getCurrentUser().getEmail());
+            sendBroadcast("wishActivity");
+        }
+    }
+
     public void login(final String email){
         db.collection("users").document(email).get()
-        .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                if(documentSnapshot.exists()) {
-                    User user = documentSnapshot.toObject(User.class);
-                    getSubscribers(email,user);
-
-                }
-                else{
-                    Toast.makeText(DataService.this,"Email does not exist", Toast.LENGTH_LONG).show();
-                }
-            }
-        });
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (!documentSnapshot.exists()) {
+                            Toast.makeText(DataService.this, "Email does not exist", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
     }
+
+    public void getCurrentUserFromFirebase(){
+        String email = mAuth.getCurrentUser().getEmail();
+        db.collection("users").document(email).get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if(documentSnapshot.exists()) {
+                            User user = documentSnapshot.toObject(User.class);
+                            getWishes(user);
+                            getSubscribers(user);
+                            if(othersUsers.size()==0) {
+                                othersUsers.add(user);
+                            }
+                            sendBroadcast("newdata");
+                        }
+                    }
+                });
+
+    }
+
+    public void getWishes(final User user){
+        db.collection("users").document(user.getEmail()).collection("wishes").get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            ArrayList<Wish> wishList = new ArrayList<>();
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Log.d(TAG, document.getId() + " => " + document.getData());
+                                Wish wish = document.toObject(Wish.class);
+                                wishList.add(wish);
+                            }
+                            user.setWishList(wishList);
+                        } else {
+                            Log.d(TAG, "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
+
+    }
+
+    public void addNewWishList(final String email){
+
+        db.collection("users").document(email).get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        User user = task.getResult().toObject(User.class);
+                        getWishes(user);
+                        othersUsers.add(user);
+                        addSubscriber(email);
+
+                    }
+                });
+
+    }
+
+    public void getSubscribers(final User currentUser){
+        String myEmail = currentUser.getEmail();
+        db.collection("users").document(myEmail).collection("subscribers").get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        ArrayList<String> subscriberList = new ArrayList<>();
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+
+                            String subscriber = document.getString("email");
+                            subscriberList.add(subscriber);
+                        }
+                        currentUser.setSubscriberList(subscriberList);
+                    }
+                });
+    }
+
+    public void  addSubscriber(String email){
+        String myEmail= mAuth.getCurrentUser().getEmail();
+        HashMap<String, String> emailHash = new HashMap<>();
+        emailHash.put("email",email);
+        db.collection("users").document(myEmail).collection("subscribers").document(email).set(emailHash)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void avoid) {
+                        Log.d(TAG,"Subscriber added");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error adding document", e);
+                    }
+                });
+
+    }
+
+
+    public void deleteSubscriber(String email) {
+        String myEmail= mAuth.getCurrentUser().getEmail();
+        db.collection("users").document(myEmail).collection("subscribers").document(email)
+                .delete()
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "DocumentSnapshot successfully deleted!");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error deleting document", e);
+                    }
+                });
+    }
+
+    public void addWish(Wish wish){
+        String email=mAuth.getCurrentUser().getEmail();
+        db.collection("users").document(email).collection("wishes").document(wish.getWishName()).set(wish)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void avoid) {
+                        Log.d(TAG,"Wish added");
+                        //Her skal der opdateres i expandable list
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error adding document", e);
+                    }
+                });
+
+    }
+
+    public void deleteWish(Wish wish){
+
+        String myEmail= mAuth.getCurrentUser().getEmail();
+        db.collection("users").document(myEmail).collection("wishes").document(wish.getWishName())
+                .delete()
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "DocumentSnapshot successfully deleted!");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error deleting document", e);
+                    }
+                });
+    }
+
+    public ArrayList<User> getUserList(){
+        return othersUsers;
+    }
+
+
 
     public void checkForBirthday(){
 //        currentUser=new CurrentUser();
@@ -207,181 +365,6 @@ public class DataService extends Service {
         });*/
 
     }
-
-    public void getWishListFromFirebase(final String email){
-        db.collection("users").document(email).get()
-                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                    @Override
-                    public void onSuccess(DocumentSnapshot documentSnapshot) {
-                        if(documentSnapshot.exists()) {
-                            User user = documentSnapshot.toObject(User.class);
-                            getWishesFromNewUser(email,user);
-
-                        }
-                        else{
-                            Toast.makeText(DataService.this,"Email does not exist", Toast.LENGTH_LONG).show();
-                        }
-                    }
-                });
-
-    }
-
-    public void addWishToWishList(Wish wish){
-        String email=mAuth.getCurrentUser().getEmail();
-        db.collection("users").document(email).collection("wishes").document().set(wish)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void avoid) {
-                        Log.d(TAG,"Wish added");
-                        //Her skal der opdateres i expandable list
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w(TAG, "Error adding document", e);
-                    }
-                });
-
-    }
-
-    public void  addSubscriber(String email){
-        String myEmail= mAuth.getCurrentUser().getEmail();
-        HashMap<String, String> hash = new HashMap<>();
-        hash.put("email",email);
-        db.collection("users").document(myEmail).collection("subscribers").document().set(hash)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void avoid) {
-                        Log.d(TAG,"Subscriber added");
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w(TAG, "Error adding document", e);
-                    }
-                });
-
-    }
-
-    public void getWishesFromNewUser(String email, User user){
-        db.collection("users").document(email).get()
-                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                    @Override
-                    public void onSuccess(DocumentSnapshot documentSnapshot) {
-                        final User user = documentSnapshot.toObject(User.class);
-                        db.collection("users").document(user.getEmail()).collection("wishes").get()
-                                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                        if (task.isSuccessful()) {
-                                            ArrayList<Wish> wishList = new ArrayList<>();
-                                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                                Log.d(TAG, document.getId() + " => " + document.getData());
-                                                Wish wish = document.toObject(Wish.class);
-                                                wishList.add(wish);
-                                            }
-                                            user.setWishList(wishList);
-                                        } else {
-                                            Log.d(TAG, "Error getting documents: ", task.getException());
-                                        }
-
-                                    }
-
-                                });
-
-
-                    }
-                });
-
-        addSubscriber(email);
-    }
-
-    public void getWishesFromExistingUser(String email){
-                db.collection("users").document(email).get()
-                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                    @Override
-                    public void onSuccess(DocumentSnapshot documentSnapshot) {
-                      final User user = documentSnapshot.toObject(User.class);
-                        db.collection("users").document(user.getEmail()).collection("wishes").get()
-                                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                        if (task.isSuccessful()) {
-                                            ArrayList<Wish> wishList = new ArrayList<>();
-                                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                                Log.d(TAG, document.getId() + " => " + document.getData());
-                                                Wish wish = document.toObject(Wish.class);
-                                                wishList.add(wish);
-                                            }
-                                            user.setWishList(wishList);
-                                            othersUsers.add(user);
-                                        } else {
-                                            Log.d(TAG, "Error getting documents: ", task.getException());
-                                        }
-
-                                    }
-
-                                });
-
-
-                    }
-                });
-
-    }
-
-    public void deleteWish(Wish wish){
-
-        ///TROR IKKE DENNE METODE VIRKER!
-
-        String myEmail= mAuth.getCurrentUser().getEmail();
-        db.collection("users").document(myEmail).collection("wishes").document(wish.getWishName())
-                .delete()
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.d(TAG, "DocumentSnapshot successfully deleted!");
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w(TAG, "Error deleting document", e);
-                    }
-                });
-    }
-
-
-
-
-    public void getSubscribers(final String email,final User user){
-        db.collection("users").document(email).collection("subscribers").get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            ArrayList<String> subscriberList = new ArrayList<>();
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Log.d(TAG, document.getId() + " => " + document.getData());
-                                String subscriber = document.getData().toString();
-                                subscriberList.add(subscriber);
-                                getWishesFromExistingUser(subscriber);
-                            }
-                            user.setSubscriberList(subscriberList);
-                        } else {
-                            Log.d(TAG, "Error getting documents: ", task.getException());
-                        }
-
-                    }
-
-                });
-
-
-    }
-
-
-
 
 
 }
