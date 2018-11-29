@@ -31,7 +31,7 @@ import java.util.Map;
 
 public class OverviewFragment extends Fragment {
     private static final String TAG ="OverviewFragment";
-
+    private ArrayList<User> userList;
     private OnOverviewFragmentInteractionListener mListener;
 
     private ExpandableListView listView;
@@ -85,9 +85,22 @@ public class OverviewFragment extends Fragment {
                 openNewWishListAlert();
             }
         });
-
+        if(userList!=null){
+            initData(userList);
+        }
 
         return view;
+    }
+
+    public void updateList(ArrayList<User> users){
+        userList=users;
+        adapter.updateList(users);
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        outState.putSerializable("userlist",userList);
+        super.onSaveInstanceState(outState);
     }
 
     private void openNewWishListAlert() {
@@ -169,33 +182,7 @@ public class OverviewFragment extends Fragment {
     }
 
     public void initData(ArrayList<User> users) {
-
-    /*    Wish wish = new Wish("Bil1","Høj","Den vil jeg gerne ha","google.com","300 kr");
-        Wish wish1 = new Wish("Bil2","Høj","Den vil rigtig jeg gerne ha","Her.dk","300 kr");
-        Wish wish2 = new Wish("Bil3","Høj","Den vil jeg utrolig gerne ha","Her.dk","300 kr");
-        Wish wish3 = new Wish("Bil4","Høj","Den vil jeg særligt gerne ha","Her.dk","300 kr");
-        Wish wish4 = new Wish("Bil5","Høj","Den vil jeg vildt gerne ha","Her.dk","300 kr");
-
-        ArrayList<Wish> wishes1 = new ArrayList<>();
-        ArrayList<Wish> wishes2 = new ArrayList<>();
-
-        wishes1.add(wish);
-        wishes1.add(wish1);
-        wishes1.add(wish2);
-        wishes2.add(wish3);
-        wishes2.add(wish4);
-
-        User user1 = new User("katten",wishes1);
-        User user2 = new User("hello",wishes2);
-        User user3 = new User("rikkehdaahudhua",wishes1);
-
-        ArrayList users = new ArrayList();
-        users.add(user1);
-        users.add(user2);
-        users.add(user3);
-        */
-
-        adapter = new ExpandableListAdapter(getContext(),users);
+        adapter = new ExpandableListAdapter(getContext(),users,this);
         listView.setAdapter(adapter);
     }
 
@@ -216,11 +203,17 @@ public class OverviewFragment extends Fragment {
         mListener = null;
     }
 
+    public void deleteSubscriber(String email){
+        mListener.deleteWishList(email);
+    }
+
+
 
     public interface OnOverviewFragmentInteractionListener {
         void onOverviewFragmentInteraction(Wish wish);
         void getWishListFromFirebase(String email);
         void addWishToWishList(Wish wish);
+        void deleteWishList(String email);
     }
 
 

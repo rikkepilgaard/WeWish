@@ -195,11 +195,11 @@ public class DataService extends Service {
                         if(documentSnapshot.exists()) {
                             User user = documentSnapshot.toObject(User.class);
                             getWishes(user);
-                            getSubscribers(user);
+                            //getSubscribers(user);
                             if(othersUsers.size()==0) {
                                 othersUsers.add(user);
                             }
-                            sendBroadcast("newdata");
+                            //sendBroadcast("newdata");
                         }
                     }
                 });
@@ -219,6 +219,9 @@ public class DataService extends Service {
                                 wishList.add(wish);
                             }
                             user.setWishList(wishList);
+                            if(user.getEmail().equals(mAuth.getCurrentUser().getEmail())){
+                            getSubscribers(user);}
+                            else{sendBroadcast("subscriberdata");}
                         } else {
                             Log.d(TAG, "Error getting documents: ", task.getException());
                         }
@@ -233,11 +236,29 @@ public class DataService extends Service {
                 .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        User user = task.getResult().toObject(User.class);
-                        getWishes(user);
-                        othersUsers.add(user);
-                        addSubscriber(email);
+                        if(task.getResult().exists()) {
+                            User user = task.getResult().toObject(User.class);
+                            getWishes(user);
+                            othersUsers.add(user);
+                            addSubscriber(email);
+                        }
+                    }
+                });
 
+    }
+
+
+    public void getSubscriberWishList(final String email){
+
+        db.collection("users").document(email).get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.getResult().exists()) {
+                            User user = task.getResult().toObject(User.class);
+                            getWishes(user);
+                            othersUsers.add(user);
+                        }
                     }
                 });
 
@@ -256,6 +277,7 @@ public class DataService extends Service {
                             subscriberList.add(subscriber);
                         }
                         currentUser.setSubscriberList(subscriberList);
+                        sendBroadcast("newdata");
                     }
                 });
     }
@@ -281,13 +303,20 @@ public class DataService extends Service {
     }
 
 
-    public void deleteSubscriber(String email) {
+    public void deleteSubscriber(final String email) {
         String myEmail= mAuth.getCurrentUser().getEmail();
         db.collection("users").document(myEmail).collection("subscribers").document(email)
                 .delete()
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
+                        for(User u: othersUsers){
+                            if(email.equals(u.getEmail())){
+                                othersUsers.remove(u);
+
+                            }
+                        }
+                        sendBroadcast("subscriberdata");
                         Log.d(TAG, "DocumentSnapshot successfully deleted!");
                     }
                 })

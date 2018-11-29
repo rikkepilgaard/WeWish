@@ -1,6 +1,7 @@
 package com.example.wewish;
 
 import android.content.Context;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,12 +17,18 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
 
     private Context context;
     private ArrayList<User> userNameList;
-
-    public ExpandableListAdapter(Context context, ArrayList<User> userNameList) {
+    OverviewFragment fragment;
+    public ExpandableListAdapter(Context context, ArrayList<User> userNameList, OverviewFragment fragment) {
         this.context = context;
         this.userNameList = userNameList;
+        this.fragment=fragment;
     }
+    void updateList(ArrayList<User> users)
+    {
+        this.userNameList = users;
 
+        notifyDataSetChanged();
+    }
     @Override
     public int getGroupCount() {
         return userNameList.size();
@@ -90,9 +97,8 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
         btnDeleteList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                fragment.deleteSubscriber(user.getEmail());
 
-                ((WishActivity)context).deleteWishList(user.getEmail());
-                Toast.makeText(context,"Trykket på " + groupPosition,Toast.LENGTH_LONG).show();
             }
         });
 

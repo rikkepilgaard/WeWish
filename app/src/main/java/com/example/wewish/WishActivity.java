@@ -37,7 +37,7 @@ public class WishActivity extends AppCompatActivity implements
 
     private String TAG ="WishActivity";
     public static FragmentManager fragmentManager;
-    private FragmentTransaction fragmentTransaction;
+   //private FragmentTransaction fragmentTransaction;
     private FrameLayout container;
     private Button signoutButton;
     private DataService dataService;
@@ -65,7 +65,7 @@ public class WishActivity extends AppCompatActivity implements
                 return;
             }
             overviewFragment = new OverviewFragment();
-            fragmentTransaction = fragmentManager.beginTransaction();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             fragmentTransaction.replace(R.id.container,overviewFragment,"replace");
             fragmentTransaction.addToBackStack(null);
             fragmentTransaction.commit();
@@ -83,6 +83,7 @@ public class WishActivity extends AppCompatActivity implements
         super.onResume();
         IntentFilter dataFilter = new IntentFilter();
         dataFilter.addAction("newdata");
+        dataFilter.addAction("subscriberdata");
         dataFilter.addAction("wishActivity");
         LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver,dataFilter);
     }
@@ -101,6 +102,9 @@ public class WishActivity extends AppCompatActivity implements
             switch (intent.getAction()){
                 case "newdata":
                     updateUserList();
+                    break;
+                case "subscriberdata":
+                    overviewFragment.updateList(dataService.getUserList());
             }
         }
     };
@@ -108,16 +112,18 @@ public class WishActivity extends AppCompatActivity implements
     @Override
     public void onOverviewFragmentInteraction(Wish wish) {
         Fragment fragment = fragmentManager.findFragmentById(R.id.container);
+        Fragment newFragment;
         if(fragment instanceof OverviewFragment){
-            fragment = DetailsFragment.newInstance(wish);
+            newFragment = DetailsFragment.newInstance(wish);
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.container,newFragment,"details");
+            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.commit();
         }
         else {
-            fragment = new OverviewFragment();
+        //    fragment = new OverviewFragment();
         }
-        fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.container,fragment,"replace");
-        fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
+
     }
 
     @Override
@@ -158,7 +164,7 @@ public class WishActivity extends AppCompatActivity implements
         List<String> subscribers = currentUser.getSubscriberList();
         if(subscribers!=null) {
             for (String subscriber : subscribers) {
-                dataService.addNewWishList(subscriber);
+                dataService.getSubscriberWishList(subscriber);
 
             }
         }
@@ -198,6 +204,7 @@ public class WishActivity extends AppCompatActivity implements
 
     public void deleteWishList(String email){
         dataService.deleteSubscriber(email);
+
     }
 
 }
