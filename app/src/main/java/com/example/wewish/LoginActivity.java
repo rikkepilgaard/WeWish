@@ -199,7 +199,7 @@ public class LoginActivity extends AppCompatActivity {
         public void onServiceConnected(ComponentName name, IBinder service) {
             DataService.DataServiceBinder dataBinder = (DataService.DataServiceBinder) service;
             dataService = dataBinder.getService();
-            dataService.checkIfUserisLoggedIn();
+            //dataService.checkIfUserisLoggedIn();
             dataServiceBound = true;
             Log.d(TAG,"Connected to DataService");
         }

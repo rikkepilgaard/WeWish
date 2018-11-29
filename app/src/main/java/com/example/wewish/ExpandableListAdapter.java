@@ -81,9 +81,12 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
 
         convertView.setBackgroundColor(context.getResources().getColor(R.color.dark));
 
+
         TextView txtUser = convertView.findViewById(R.id.txtUserName);
+        if(groupPosition==0){txtUser.setText(R.string.mywishes);}
+        else{
         String text = user.getUserName() + "'s wishes";
-        txtUser.setText(text);
+        txtUser.setText(text);}
 
         TextView txtNumberWishes = convertView.findViewById(R.id.txtWishNumber);
         int number = 0;
@@ -92,15 +95,21 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
         }
         txtNumberWishes.setText(String.valueOf(number));
 
-        ImageButton btnDeleteList = convertView.findViewById(R.id.btnDeleteList);
-        btnDeleteList.setFocusable(false);
-        btnDeleteList.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                fragment.deleteSubscriber(user.getEmail());
 
-            }
-        });
+        ImageButton btnDeleteList = convertView.findViewById(R.id.btnDeleteList);
+
+        if(groupPosition==0){btnDeleteList.setVisibility(View.INVISIBLE);}
+        else {
+            btnDeleteList.setFocusable(false);
+            btnDeleteList.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    fragment.deleteSubscriber(user.getEmail());
+
+                }
+            });
+        }
+
 
         return convertView;
     }

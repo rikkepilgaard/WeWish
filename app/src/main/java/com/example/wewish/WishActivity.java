@@ -1,23 +1,31 @@
 package com.example.wewish;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.res.Configuration;
+import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -42,6 +50,7 @@ public class WishActivity extends AppCompatActivity implements
     private Button signoutButton;
     private DataService dataService;
     private boolean dataServiceBound;
+    ProgressBar progressBar;
 
     private OverviewFragment overviewFragment;
 
@@ -57,6 +66,9 @@ public class WishActivity extends AppCompatActivity implements
         fragmentManager = getSupportFragmentManager();
         container = findViewById(R.id.container);
         signoutButton=findViewById(R.id.signout);
+        progressBar = findViewById(R.id.progressbar);
+        progressBar.setVisibility(View.VISIBLE);
+        progressBar.bringToFront();
 
         users = new ArrayList<>();
 
@@ -70,6 +82,24 @@ public class WishActivity extends AppCompatActivity implements
             fragmentTransaction.addToBackStack(null);
             fragmentTransaction.commit();
         }
+
+        int orientation = this.getResources().getConfiguration().orientation;
+
+        if(orientation == Configuration.ORIENTATION_LANDSCAPE){
+            DetailsFragment fragment = DetailsFragment.newInstance(null, 0);
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.container2,fragment,"detail");
+            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.commit();
+        }
+
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+
+
+        super.onConfigurationChanged(newConfig);
     }
 
     @Override
@@ -85,6 +115,8 @@ public class WishActivity extends AppCompatActivity implements
         dataFilter.addAction("newdata");
         dataFilter.addAction("subscriberdata");
         dataFilter.addAction("wishActivity");
+        dataFilter.addAction("notification");
+
         LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver,dataFilter);
     }
 
@@ -105,23 +137,24 @@ public class WishActivity extends AppCompatActivity implements
                     break;
                 case "subscriberdata":
                     overviewFragment.updateList(dataService.getUserList());
+                    break;
+                case "notification":
+
+                    showNotification(intent.getStringExtra("name"));
             }
         }
     };
 
     @Override
-    public void onOverviewFragmentInteraction(Wish wish) {
+    public void onOverviewFragmentInteraction(Wish wish,int groupPosition) {
         Fragment fragment = fragmentManager.findFragmentById(R.id.container);
         Fragment newFragment;
         if(fragment instanceof OverviewFragment){
-            newFragment = DetailsFragment.newInstance(wish);
+            newFragment = DetailsFragment.newInstance(wish, groupPosition);
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             fragmentTransaction.replace(R.id.container,newFragment,"details");
             fragmentTransaction.addToBackStack(null);
             fragmentTransaction.commit();
-        }
-        else {
-        //    fragment = new OverviewFragment();
         }
 
     }
@@ -167,7 +200,9 @@ public class WishActivity extends AppCompatActivity implements
                 dataService.getSubscriberWishList(subscriber);
 
             }
+
         }
+        progressBar.setVisibility(View.INVISIBLE);
         overviewFragment.initData(dataService.getUserList());
     }
 
@@ -204,6 +239,33 @@ public class WishActivity extends AppCompatActivity implements
 
     public void deleteWishList(String email){
         dataService.deleteSubscriber(email);
+
+    }
+
+    public void showNotification(String name){
+        //https://developer.android.com/training/notify-user/build-notification
+
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+            NotificationChannel channel = new NotificationChannel("101",
+                    "notiname",NotificationManager.IMPORTANCE_DEFAULT);
+
+            channel.canShowBadge();
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(channel);
+            }
+        }
+
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this,"101")
+                .setSmallIcon(R.drawable.ic_launcher_background)
+                .setContentTitle(getString(R.string.alert_time_title))
+                .setContentText(name+" "+getString(R.string.birthdatetext));
+
+
+        if (notificationManager != null) {
+            notificationManager.notify(1,notificationBuilder.build());
+        }
 
     }
 

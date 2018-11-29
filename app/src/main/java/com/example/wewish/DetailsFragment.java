@@ -34,9 +34,10 @@ public class DetailsFragment extends Fragment {
     }
 
 
-    public static DetailsFragment newInstance(Wish wish) {
+    public static DetailsFragment newInstance(Wish wish, int groupPosition) {
         Bundle bundle = new Bundle();
         bundle.putSerializable("wish",wish);
+        bundle.putInt("group",groupPosition);
         DetailsFragment fragment = new DetailsFragment();
         fragment.setArguments(bundle);
         return fragment;
@@ -55,6 +56,7 @@ public class DetailsFragment extends Fragment {
 
         assert getArguments() != null;
         final Wish wish = (Wish)getArguments().getSerializable("wish");
+
 
         txtWishName = view.findViewById(R.id.txtWishNameChange);
         assert wish != null;
@@ -77,10 +79,14 @@ public class DetailsFragment extends Fragment {
         });
 
         btnDelete = view.findViewById(R.id.btnDelete);
+        if((int)getArguments().getSerializable("group")==0){
+            btnDelete.setVisibility(View.VISIBLE);
+        }
         btnDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mListener.deleteWish(wish);
+                mListener.previousFragment();
             }
         });
 

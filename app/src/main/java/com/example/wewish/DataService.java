@@ -28,8 +28,14 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class DataService extends Service {
@@ -71,7 +77,15 @@ public class DataService extends Service {
 
         othersUsers = new ArrayList<>();
 
-        getCurrentUserFromFirebase();
+        //birthdateInTwoWeeks("13-12-1995","sofie");
+
+        if(mAuth.getCurrentUser()!=null){
+            login(mAuth.getCurrentUser().getEmail());
+            sendBroadcast("wishActivity","");
+        }
+        else{
+
+        }
 
         return START_STICKY;
 
@@ -83,6 +97,7 @@ public class DataService extends Service {
             while (running) {
                 try {
                     Log.d(TAG, "BirthdayTask started");
+                    Thread.sleep(10000);
                     checkForBirthday();
                     //Thread sleeps for 1 day
                     Thread.sleep(86400000);
@@ -94,9 +109,10 @@ public class DataService extends Service {
         }
     }
 
-    public void sendBroadcast(String action){
+    public void sendBroadcast(String action, String extra){
         Intent broadcastIntent = new Intent();
         broadcastIntent.setAction(action);
+        broadcastIntent.putExtra("name",extra);
         LocalBroadcastManager.getInstance(DataService.this).sendBroadcast(broadcastIntent);
         Log.d(TAG,"Broadcast sent");
     }
@@ -111,7 +127,7 @@ public class DataService extends Service {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "createUserWithEmail:success");
                             saveNewUser(email,username,date);
-                            sendBroadcast("wishActivity");
+                            sendBroadcast("wishActivity",null);
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "createUserWithEmail:failure", task.getException());
@@ -153,8 +169,9 @@ public class DataService extends Service {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithEmail:success");
-                            sendBroadcast("wishActivity");
+                            sendBroadcast("wishActivity",null);
                             login(email);
+
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithEmail:failure", task.getException());
@@ -167,12 +184,14 @@ public class DataService extends Service {
                 });
     }
 
-    public void checkIfUserisLoggedIn(){
+/*    public boolean checkIfUserisLoggedIn(){
         if(mAuth.getCurrentUser()!=null){
             login(mAuth.getCurrentUser().getEmail());
             sendBroadcast("wishActivity");
+            return true;
         }
-    }
+        return false;
+    }*/
 
     public void login(final String email){
         db.collection("users").document(email).get()
@@ -182,27 +201,28 @@ public class DataService extends Service {
                         if (!documentSnapshot.exists()) {
                             Toast.makeText(DataService.this, "Email does not exist", Toast.LENGTH_LONG).show();
                         }
+                        else{getCurrentUserFromFirebase();}
                     }
                 });
     }
 
     public void getCurrentUserFromFirebase(){
         String email = mAuth.getCurrentUser().getEmail();
-        db.collection("users").document(email).get()
-                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                    @Override
-                    public void onSuccess(DocumentSnapshot documentSnapshot) {
-                        if(documentSnapshot.exists()) {
-                            User user = documentSnapshot.toObject(User.class);
-                            getWishes(user);
-                            //getSubscribers(user);
-                            if(othersUsers.size()==0) {
-                                othersUsers.add(user);
+
+            db.collection("users").document(email).get()
+                    .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                        @Override
+                        public void onSuccess(DocumentSnapshot documentSnapshot) {
+                            if (documentSnapshot.exists()) {
+                                User user = documentSnapshot.toObject(User.class);
+                                getWishes(user);
+                                //getSubscribers(user);
+                                if (othersUsers.size() == 0) {
+                                    othersUsers.add(user);
+                                }
                             }
-                            //sendBroadcast("newdata");
                         }
-                    }
-                });
+                    });
 
     }
 
@@ -221,7 +241,7 @@ public class DataService extends Service {
                             user.setWishList(wishList);
                             if(user.getEmail().equals(mAuth.getCurrentUser().getEmail())){
                             getSubscribers(user);}
-                            else{sendBroadcast("subscriberdata");}
+                            else{sendBroadcast("subscriberdata",null);}
                         } else {
                             Log.d(TAG, "Error getting documents: ", task.getException());
                         }
@@ -277,7 +297,7 @@ public class DataService extends Service {
                             subscriberList.add(subscriber);
                         }
                         currentUser.setSubscriberList(subscriberList);
-                        sendBroadcast("newdata");
+                        sendBroadcast("newdata",null);
                     }
                 });
     }
@@ -316,7 +336,7 @@ public class DataService extends Service {
 
                             }
                         }
-                        sendBroadcast("subscriberdata");
+                        sendBroadcast("subscriberdata",null);
                         Log.d(TAG, "DocumentSnapshot successfully deleted!");
                     }
                 })
@@ -328,14 +348,17 @@ public class DataService extends Service {
                 });
     }
 
-    public void addWish(Wish wish){
+    public void addWish(final Wish wish){
         String email=mAuth.getCurrentUser().getEmail();
         db.collection("users").document(email).collection("wishes").document(wish.getWishName()).set(wish)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void avoid) {
                         Log.d(TAG,"Wish added");
-                        //Her skal der opdateres i expandable list
+                        List<Wish> wishlist = othersUsers.get(0).getWishList();
+                        wishlist.add(wish);
+                        othersUsers.get(0).setWishList(wishlist);
+                        sendBroadcast("subscriberdata",null);
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -347,7 +370,7 @@ public class DataService extends Service {
 
     }
 
-    public void deleteWish(Wish wish){
+    public void deleteWish(final Wish wish){
 
         String myEmail= mAuth.getCurrentUser().getEmail();
         db.collection("users").document(myEmail).collection("wishes").document(wish.getWishName())
@@ -355,6 +378,14 @@ public class DataService extends Service {
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
+                        List<Wish> mywishes= othersUsers.get(0).getWishList();
+                        for(Wish w: mywishes){
+                            if(w.getWishName().equals(wish.getWishName())){
+                                mywishes.remove(w);
+                            }
+                        }
+                        othersUsers.get(0).setWishList(mywishes);
+                        sendBroadcast("subscriberdata",null);
                         Log.d(TAG, "DocumentSnapshot successfully deleted!");
                     }
                 })
@@ -373,25 +404,86 @@ public class DataService extends Service {
 
 
     public void checkForBirthday(){
-//        currentUser=new CurrentUser();
-//        if(currentUser!=null){
-//        String user = currentUser.getCurrentUser().getEmail();}
-        //DocumentReference docRef = db.collection("users").document(user);
-        /*docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    if (document.exists()) {
-                        Log.d(TAG, "DocumentSnapshot data: " + document.getData());
-                    } else {
-                        Log.d(TAG, "No such document");
+        currentUser=new CurrentUser();
+        if(currentUser!=null){
+        String user = currentUser.getCurrentUser().getEmail();
+        db.collection("users").document(user).get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists()) {
+                            User user = documentSnapshot.toObject(User.class);
+                            if (othersUsers.size() == 0) {
+                                othersUsers.add(user);
+                            }
+                            checkSubscriberBirthdate(user);
+                        }
                     }
-                } else {
-                    Log.d(TAG, "get failed with ", task.getException());
-                }
-            }
-        });*/
+                });
+
+    }
+    }
+    public void checkSubscriberBirthdate(final User currentUser){
+        String myEmail = currentUser.getEmail();
+
+
+        db.collection("users").document(myEmail).collection("subscribers").get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        ArrayList<String> subscriberList = new ArrayList<>();
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+
+                            String subscriber = document.getString("email");
+                            subscriberList.add(subscriber);
+                        }
+                        currentUser.setSubscriberList(subscriberList);
+                        for (String s : subscriberList) {
+                            db.collection("users").document(s).get()
+                                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                            if (task.getResult().exists()) {
+                                                User user = task.getResult().toObject(User.class);
+                                                birthdateInTwoWeeks(user.getBirthDate(),user.getUserName());
+
+                                            }
+                                        }
+                                    });
+                        }
+                    }
+                });
+    }
+
+    private void birthdateInTwoWeeks(String birthdate, String name){
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.YEAR,2000);
+        calendar.set(Calendar.MINUTE,0);
+        calendar.set(Calendar.HOUR_OF_DAY,0);
+        calendar.set(Calendar.SECOND,0);
+        Date currentDate = calendar.getTime();
+
+
+        SimpleDateFormat simpledateformat = new SimpleDateFormat("dd-MM-yyyy",Locale.getDefault());
+
+        Date userdate= null;
+        try {
+            userdate = simpledateformat.parse(birthdate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        calendar.setTime(userdate);
+        calendar.set(Calendar.YEAR,2000);
+        userdate = calendar.getTime();
+
+        long diff = userdate.getTime()-currentDate.getTime();
+        if(diff>1200960000 && diff<1209600100){
+            sendBroadcast("notification",name);
+        }
+
+
+
 
     }
 

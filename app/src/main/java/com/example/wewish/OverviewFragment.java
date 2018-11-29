@@ -63,7 +63,7 @@ public class OverviewFragment extends Fragment {
 
                 if (mListener != null) {
                     Wish wish = (Wish)adapter.getChild(groupPosition,childPosition);
-                    mListener.onOverviewFragmentInteraction(wish);
+                    mListener.onOverviewFragmentInteraction(wish,groupPosition);
                 }
 
                 return true;
@@ -210,7 +210,7 @@ public class OverviewFragment extends Fragment {
 
 
     public interface OnOverviewFragmentInteractionListener {
-        void onOverviewFragmentInteraction(Wish wish);
+        void onOverviewFragmentInteraction(Wish wish, int groupPosition);
         void getWishListFromFirebase(String email);
         void addWishToWishList(Wish wish);
         void deleteWishList(String email);
