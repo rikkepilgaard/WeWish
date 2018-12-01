@@ -97,11 +97,6 @@ public class OverviewFragment extends Fragment {
         adapter.updateList(users);
     }
 
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        outState.putSerializable("userlist",userList);
-        super.onSaveInstanceState(outState);
-    }
 
     private void openNewWishListAlert() {
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
