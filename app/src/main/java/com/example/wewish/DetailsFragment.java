@@ -2,6 +2,7 @@ package com.example.wewish;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
@@ -77,12 +78,17 @@ public class DetailsFragment extends Fragment {
         }
 
         btnBack = view.findViewById(R.id.btnBack);
+        int orientation = this.getResources().getConfiguration().orientation;
+        if(orientation==Configuration.ORIENTATION_PORTRAIT){
+            btnBack.setVisibility(View.VISIBLE);
+        }
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mListener.previousFragment();
             }
         });
+
 
         btnDelete = view.findViewById(R.id.btnDelete);
         if((int)getArguments().getSerializable("group")==0){

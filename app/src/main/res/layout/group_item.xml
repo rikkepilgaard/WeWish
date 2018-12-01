@@ -43,7 +43,7 @@
         android:scaleType="fitCenter"
         android:padding="5dp"
         android:background="@android:color/transparent"
-        android:tint="@android:color/holo_red_dark"
+        android:tint="@color/colorPrimaryDark"
         android:visibility="visible"
         android:focusable="false"
 

@@ -25,15 +25,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,8 +44,10 @@ public class WishActivity extends AppCompatActivity implements
     private DataService dataService;
     private boolean dataServiceBound;
     ProgressBar progressBar;
+    int orientation;
 
     private OverviewFragment overviewFragment;
+    private DetailsFragment detailsFragment;
 
     private ArrayList<User> users;
 
@@ -67,40 +62,37 @@ public class WishActivity extends AppCompatActivity implements
         container = findViewById(R.id.container);
         signoutButton=findViewById(R.id.signout);
         progressBar = findViewById(R.id.progressbar);
-        progressBar.setVisibility(View.VISIBLE);
-        progressBar.bringToFront();
+
 
         users = new ArrayList<>();
 
         if(container!=null){
             if(savedInstanceState!=null){
-                return;
+                overviewFragment = (OverviewFragment)fragmentManager.getFragment(savedInstanceState,"overviewfragment");
+                detailsFragment = (DetailsFragment)fragmentManager.getFragment(savedInstanceState,"detailsfragment");
+            } else {
+                progressBar.setVisibility(View.VISIBLE);
+                progressBar.bringToFront();
+                overviewFragment = new OverviewFragment();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.replace(R.id.container, overviewFragment, "replace");
+                fragmentTransaction.addToBackStack(null);
+                fragmentTransaction.commit();
             }
-            overviewFragment = new OverviewFragment();
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.container,overviewFragment,"replace");
-            fragmentTransaction.addToBackStack(null);
-            fragmentTransaction.commit();
         }
 
-        int orientation = this.getResources().getConfiguration().orientation;
+        orientation = this.getResources().getConfiguration().orientation;
 
         if(orientation == Configuration.ORIENTATION_LANDSCAPE){
-            DetailsFragment fragment = DetailsFragment.newInstance(null, 0);
+            detailsFragment = DetailsFragment.newInstance(null, 0);
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.container2,fragment,"detail");
+            fragmentTransaction.replace(R.id.container2,detailsFragment,"detail");
             fragmentTransaction.addToBackStack(null);
             fragmentTransaction.commit();
         }
 
     }
 
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-
-
-        super.onConfigurationChanged(newConfig);
-    }
 
     @Override
     protected void onStart() {
@@ -127,6 +119,16 @@ public class WishActivity extends AppCompatActivity implements
         unbindServices();
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        fragmentManager.putFragment(outState, "overviewfragment", overviewFragment);
+        if(detailsFragment!=null) {
+            fragmentManager.putFragment(outState, "detailsfragment", detailsFragment);
+        }
+    }
+
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -147,15 +149,21 @@ public class WishActivity extends AppCompatActivity implements
 
     @Override
     public void onOverviewFragmentInteraction(Wish wish,int groupPosition) {
-        Fragment fragment = fragmentManager.findFragmentById(R.id.container);
-        Fragment newFragment;
-        if(fragment instanceof OverviewFragment){
-            newFragment = DetailsFragment.newInstance(wish, groupPosition);
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.container,newFragment,"details");
-            fragmentTransaction.addToBackStack(null);
-            fragmentTransaction.commit();
+        detailsFragment = DetailsFragment.newInstance(wish, groupPosition);
+
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        //orientation = this.getResources().getConfiguration().orientation;
+        if(orientation == Configuration.ORIENTATION_LANDSCAPE){
+            fragmentTransaction.replace(R.id.container2, detailsFragment, "details");
+        } else {
+            fragmentTransaction.replace(R.id.container, detailsFragment, "details");
         }
+
+
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+
 
     }
 
@@ -213,6 +221,13 @@ public class WishActivity extends AppCompatActivity implements
             DataService.DataServiceBinder dataBinder = (DataService.DataServiceBinder) service;
             dataService = dataBinder.getService();
             dataServiceBound = true;
+
+            if(dataService.getUserList()==null){
+                dataService.getCurrentUserFromFirebase();
+            }
+            else {
+                overviewFragment.initData(dataService.getUserList());
+            }
 
             //updateUserList();
 

@@ -11,7 +11,9 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout1">
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout1"
+        android:fadeScrollbars="false"
+        android:scrollbarSize="10dp">
 
         <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
@@ -191,6 +193,7 @@
             android:layout_marginBottom="16dp"
             android:layout_weight="1"
             android:text="@string/back"
+            android:visibility="invisible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/btnDelete"
             app:layout_constraintStart_toStartOf="parent" />
