@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -114,9 +115,13 @@ public class OverviewFragment extends Fragment {
                 .setCancelable(false)
                 .setPositiveButton(getString(R.string.add),new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog,int id) {
+
                         EditText edtEmail = v.findViewById(R.id.edtEmail);
                         String email = edtEmail.getText().toString();
-                        mListener.getWishListFromFirebase(email);
+                        if(email.equals("")){
+                            Toast.makeText(getContext(),R.string.blankwishlist, Toast.LENGTH_LONG).show();}
+                            else{
+                        mListener.getWishListFromFirebase(email);}
                     }
                 })
                 .setNegativeButton(getString(R.string.cancel),new DialogInterface.OnClickListener() {
@@ -143,7 +148,7 @@ public class OverviewFragment extends Fragment {
 
         // set dialog message
         alertDialogBuilder
-                .setMessage(getString(R.string.add_wish_list_description))
+                .setMessage(null)
                 .setCancelable(false)
                 .setPositiveButton(getString(R.string.add),new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog,int id) {
@@ -152,14 +157,16 @@ public class OverviewFragment extends Fragment {
                         EditText price = v.findViewById(R.id.editPriceAlert);
                         EditText url=v.findViewById(R.id.editUrlAlert);
                         EditText priority =v.findViewById(R.id.editPriorityAlert);
-
+                        if(wishName.getText().toString().equals("")){
+                            Toast.makeText(getContext(), R.string.blankwishname, Toast.LENGTH_SHORT).show(); }
+                        else{
                         Wish wish = new Wish(wishName.getText().toString(),
                                 priority.getText().toString(),
                                 comments.getText().toString(),
                                 url.getText().toString(),
                                 price.getText().toString());
 
-                        mListener.addWishToWishList(wish);
+                        mListener.addWishToWishList(wish);}
                     }
                 })
                 .setNegativeButton(getString(R.string.cancel),new DialogInterface.OnClickListener() {

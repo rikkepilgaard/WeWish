@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WeWish</string>
+    <string name="username">Brugernavn</string>
+    <string name="btLogin">Login</string>
+    <string name="btCreate">Opret ny bruger</string>
+    <string name="alreadyExist">Brugernavn er taget. Vælg et andet brugernavn :-)</string>
+    <string name="wrongUsername">"Bruger eksisterer ikke. Prøv igen :-) "</string>
+    <string name="blankwishlist">Skriv venligst en email i tekstfeltet</string>
+    <string name="blankwishname">Giv venligst dit ønske et navn</string>
+    <string name="password">Kodeord</string>
+    <string name="email">Email</string>
+    <string name="errorEmail">Venligst indtast Email</string>
+    <string name="errorPassword">Venligst indtast kodeord</string>
+    <string name="birthdate">Vælg din fødselsdato</string>
+    <string name="done">Færdig</string>
+    <string name="priority">Prioritet:</string>
+    <string name="price">Pris:</string>
+    <string name="comment">Kommentarer:</string>
+    <string name="url">"Hjemmeside: "</string>
+    <string name="signout">Log ud</string>
+    <string name="add_wish">Tilføj nyt ønske</string>
+    <string name="add_wish_list">Tilføj ny ønskeseddel</string>
+    <string name="back">Tilbage</string>
+    <string name="delete">Slet</string>
+    <string name="add_wish_title">Tilføj nyt ønske</string>
+    <string name="add_wish_list_title">Tilføj ny ønskeseddel</string>
+    <string name="add_wish_description">Udfyld de følgende felter for at tilføje et nyt ønske til din ønskeseddel</string>
+    <string name="add_wish_list_description">Skriv email på den person hvis ønskeseddel du gerne vil følge</string>
+    <string name="add">Tilføj</string>
+    <string name="cancel">Fortryd</string>
+    <string name="enter_email">E-mail...</string>
+    <string name="mywishes">Mine ønsker</string>
+    <string name="alert_time_title">Fødselsdag snart!!</string>
+    <string name="birthdatetext">har fødselsdag om to uger! Husk at købe en gave</string>
+    <string name="no_wish">Du har ikke valgt noget ønske</string>
+</resources>

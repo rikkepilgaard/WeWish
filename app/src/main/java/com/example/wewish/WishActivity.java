@@ -273,7 +273,7 @@ public class WishActivity extends AppCompatActivity implements
         }
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this,"101")
-                .setSmallIcon(R.drawable.ic_launcher_background)
+                .setSmallIcon(R.drawable.ic_noti_icon)
                 .setContentTitle(getString(R.string.alert_time_title))
                 .setContentText(name+" "+getString(R.string.birthdatetext));
 
