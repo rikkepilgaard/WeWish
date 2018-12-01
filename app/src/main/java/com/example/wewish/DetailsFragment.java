@@ -29,7 +29,7 @@ public class DetailsFragment extends Fragment {
 
     Button btnBack;
     Button btnDelete;
-    ImageButton btnOpenUrl;
+    Button btnOpenUrl;
 
     public DetailsFragment() {
         // Required empty public constructor
@@ -78,10 +78,8 @@ public class DetailsFragment extends Fragment {
         }
 
         btnBack = view.findViewById(R.id.btnBack);
-        int orientation = this.getResources().getConfiguration().orientation;
-        if(orientation==Configuration.ORIENTATION_PORTRAIT){
-            btnBack.setVisibility(View.VISIBLE);
-        }
+        btnBack.setVisibility(View.VISIBLE);
+
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

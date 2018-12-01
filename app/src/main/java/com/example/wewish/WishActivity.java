@@ -20,6 +20,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutCompat;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -30,6 +31,9 @@ import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.example.wewish.ConstantValues.MODE_SMARTPHONE;
+import static com.example.wewish.ConstantValues.MODE_TABLET;
 
 public class WishActivity extends AppCompatActivity implements
         OverviewFragment.OnOverviewFragmentInteractionListener,
@@ -44,12 +48,11 @@ public class WishActivity extends AppCompatActivity implements
     private DataService dataService;
     private boolean dataServiceBound;
     ProgressBar progressBar;
-    int orientation;
-
     private OverviewFragment overviewFragment;
     private DetailsFragment detailsFragment;
 
     private ArrayList<User> users;
+    private int mode;
 
 
 
@@ -81,9 +84,20 @@ public class WishActivity extends AppCompatActivity implements
             }
         }
 
-        orientation = this.getResources().getConfiguration().orientation;
+        //https://forum.unity.com/threads/reliable-way-to-detect-tablet-on-android.127184/
+        DisplayMetrics dm = getResources().getDisplayMetrics();
+        float screenWidth  = dm.widthPixels / dm.xdpi;
+        float screenHeight = dm.heightPixels / dm.ydpi;
+        double inches = Math.sqrt(Math.pow(screenWidth, 2) +
+                Math.pow(screenHeight, 2));
 
-        if(orientation == Configuration.ORIENTATION_LANDSCAPE){
+        if (inches > 6){
+            mode = MODE_TABLET;
+        }else{
+            mode = MODE_SMARTPHONE;
+        }
+
+        if(mode == MODE_TABLET){
             detailsFragment = DetailsFragment.newInstance(null, 0);
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             fragmentTransaction.replace(R.id.container2,detailsFragment,"detail");
@@ -125,7 +139,8 @@ public class WishActivity extends AppCompatActivity implements
 
         fragmentManager.putFragment(outState, "overviewfragment", overviewFragment);
         if(detailsFragment!=null) {
-            fragmentManager.putFragment(outState, "detailsfragment", detailsFragment);
+            if(detailsFragment.isAdded())
+                fragmentManager.putFragment(outState, "detailsfragment", detailsFragment);
         }
     }
 
@@ -152,18 +167,11 @@ public class WishActivity extends AppCompatActivity implements
         detailsFragment = DetailsFragment.newInstance(wish, groupPosition);
 
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-
-        //orientation = this.getResources().getConfiguration().orientation;
-        if(orientation == Configuration.ORIENTATION_LANDSCAPE){
+        if(mode == MODE_TABLET) {
             fragmentTransaction.replace(R.id.container2, detailsFragment, "details");
-        } else {
-            fragmentTransaction.replace(R.id.container, detailsFragment, "details");
-        }
-
-
+        }else fragmentTransaction.replace(R.id.container, detailsFragment, "details");
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
-
 
     }
 
@@ -226,7 +234,8 @@ public class WishActivity extends AppCompatActivity implements
                 dataService.getCurrentUserFromFirebase();
             }
             else {
-                overviewFragment.initData(dataService.getUserList());
+                if(overviewFragment.isVisible())
+                    overviewFragment.initData(dataService.getUserList());
             }
 
             //updateUserList();
@@ -255,6 +264,13 @@ public class WishActivity extends AppCompatActivity implements
     public void deleteWishList(String email){
         dataService.deleteSubscriber(email);
 
+    }
+
+    @Override
+    public ArrayList<User> getUserList() {
+        if(dataServiceBound) {
+            return dataService.getUserList();
+        }else return null;
     }
 
     public void showNotification(String name){

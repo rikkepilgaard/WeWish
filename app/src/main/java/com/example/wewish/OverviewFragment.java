@@ -86,6 +86,8 @@ public class OverviewFragment extends Fragment {
                 openNewWishListAlert();
             }
         });
+
+        userList = mListener.getUserList();
         if(userList!=null){
             initData(userList);
         }
@@ -216,6 +218,7 @@ public class OverviewFragment extends Fragment {
         void getWishListFromFirebase(String email);
         void addWishToWishList(Wish wish);
         void deleteWishList(String email);
+        ArrayList<User> getUserList();
     }
 
 
