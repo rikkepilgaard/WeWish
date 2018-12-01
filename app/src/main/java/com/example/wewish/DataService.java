@@ -40,12 +40,13 @@ import java.util.Map;
 
 public class DataService extends Service {
 
-    String TAG = "Dataservice";
+    private String TAG = "Dataservice";
     AsyncTaskStart BirthdayTask;
-    Boolean running;
+    private Boolean running;
     private FirebaseAuth mAuth;
-    CurrentUser currentUser;
-    ArrayList<User> othersUsers;
+
+    private ArrayList<User> othersUsers;
+    private String currentUserEmail;
 
     public DataService() {
     }
@@ -62,6 +63,7 @@ public class DataService extends Service {
             return DataService.this;
         }
     }
+
 
     private IBinder binder = new DataServiceBinder();
 
@@ -81,6 +83,7 @@ public class DataService extends Service {
 
         if(mAuth.getCurrentUser()!=null){
             login(mAuth.getCurrentUser().getEmail());
+            currentUserEmail=mAuth.getCurrentUser().getEmail();
             sendBroadcast("wishActivity","");
         }
         else{
@@ -150,6 +153,8 @@ public class DataService extends Service {
                     @Override
                     public void onSuccess(Void avoid) {
                         Log.d(TAG,"User added");
+                        currentUserEmail=email;
+                        getCurrentUserFromFirebase();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -184,14 +189,6 @@ public class DataService extends Service {
                 });
     }
 
-/*    public boolean checkIfUserisLoggedIn(){
-        if(mAuth.getCurrentUser()!=null){
-            login(mAuth.getCurrentUser().getEmail());
-            sendBroadcast("wishActivity");
-            return true;
-        }
-        return false;
-    }*/
 
     public void login(final String email){
         db.collection("users").document(email).get()
@@ -207,9 +204,9 @@ public class DataService extends Service {
     }
 
     public void getCurrentUserFromFirebase(){
-        String email = mAuth.getCurrentUser().getEmail();
+        currentUserEmail= mAuth.getCurrentUser().getEmail();
 
-            db.collection("users").document(email).get()
+            db.collection("users").document(currentUserEmail).get()
                     .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                         @Override
                         public void onSuccess(DocumentSnapshot documentSnapshot) {
@@ -324,8 +321,8 @@ public class DataService extends Service {
 
 
     public void deleteSubscriber(final String email) {
-        String myEmail= mAuth.getCurrentUser().getEmail();
-        db.collection("users").document(myEmail).collection("subscribers").document(email)
+        //String myEmail= mAuth.getCurrentUser().getEmail();
+        db.collection("users").document(currentUserEmail).collection("subscribers").document(email)
                 .delete()
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -349,8 +346,8 @@ public class DataService extends Service {
     }
 
     public void addWish(final Wish wish){
-        String email=mAuth.getCurrentUser().getEmail();
-        db.collection("users").document(email).collection("wishes").document(wish.getWishName()).set(wish)
+        //String email=mAuth.getCurrentUser().getEmail();
+        db.collection("users").document(currentUserEmail).collection("wishes").document(wish.getWishName()).set(wish)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void avoid) {
@@ -372,8 +369,8 @@ public class DataService extends Service {
 
     public void deleteWish(final Wish wish){
 
-        String myEmail= mAuth.getCurrentUser().getEmail();
-        db.collection("users").document(myEmail).collection("wishes").document(wish.getWishName())
+        //String myEmail= mAuth.getCurrentUser().getEmail();
+        db.collection("users").document(currentUserEmail).collection("wishes").document(wish.getWishName())
                 .delete()
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -404,9 +401,8 @@ public class DataService extends Service {
 
 
     public void checkForBirthday(){
-        currentUser=new CurrentUser();
-        if(currentUser!=null){
-        String user = currentUser.getCurrentUser().getEmail();
+        if(mAuth.getCurrentUser()!=null){
+        String user = mAuth.getCurrentUser().getEmail();
         db.collection("users").document(user).get()
                 .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                     @Override
@@ -481,9 +477,6 @@ public class DataService extends Service {
         if(diff>1200960000 && diff<1209600100){
             sendBroadcast("notification",name);
         }
-
-
-
 
     }
 
