@@ -259,6 +259,8 @@ public class DataService extends Service {
                             othersUsers.add(user);
                             addSubscriber(email);
                         }
+                        else{
+                            Toast.makeText(DataService.this, R.string.wrongUsername, Toast.LENGTH_SHORT).show();}
                     }
                 });
 
@@ -314,6 +316,7 @@ public class DataService extends Service {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         Log.w(TAG, "Error adding document", e);
+
                     }
                 });
 

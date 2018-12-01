@@ -5,6 +5,8 @@
     <string name="btCreate">Create new user</string>
     <string name="alreadyExist">Username is taken. Choose another one :-)</string>
     <string name="wrongUsername">User does not exist. Try again :-)</string>
+    <string name="blankwishlist">Please write a email in the textfield</string>
+    <string name="blankwishname">Please give your wish a name</string>
     <string name="password">Password</string>
     <string name="email">Email</string>
     <string name="errorEmail">Please enter Email</string>
@@ -15,7 +17,6 @@
     <string name="priority">Priority:</string>
     <string name="price">Price:</string>
     <string name="comment">Comments:</string>
-    <string name="url">URL:</string>
     <string name="signout">Sign out</string>
     <string name="add_wish">Add new wish</string>
     <string name="add_wish_list">Add new wish list</string>
@@ -39,4 +40,5 @@
     <string name="alert_time_title">Birthday soon!!</string>
     <string name="birthdatetext">has birthday in two weeks! Remember to buy a present</string>
     <string name="no_wish">No wish is chosen</string>
+    <string name="url">Homepage:</string>
 </resources>
