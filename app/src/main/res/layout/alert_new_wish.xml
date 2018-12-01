@@ -20,19 +20,21 @@
         android:id="@+id/txtPriceAlert"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Do you know the price?"/>
+        android:text="Do you know the price?"
+        />
 
     <EditText
         android:id="@+id/editPriceAlert"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textIsSelectable="true"/>
+        android:textIsSelectable="true"
+        android:inputType="numberDecimal"/>
 
     <TextView
         android:id="@+id/txtPriorityAlert"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="How much do you want the wish?"/>
+        android:text="How much do you want the wish?" />
 
     <EditText
         android:id="@+id/editPriorityAlert"
