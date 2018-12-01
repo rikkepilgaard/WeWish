@@ -81,7 +81,7 @@ public class WishActivity extends AppCompatActivity implements
             }
         }
 
-        orientation = this.getResources().getConfiguration().orientation;
+      /*  orientation = this.getResources().getConfiguration().orientation;
 
         if(orientation == Configuration.ORIENTATION_LANDSCAPE){
             detailsFragment = DetailsFragment.newInstance(null, 0);
@@ -89,7 +89,7 @@ public class WishActivity extends AppCompatActivity implements
             fragmentTransaction.replace(R.id.container2,detailsFragment,"detail");
             fragmentTransaction.addToBackStack(null);
             fragmentTransaction.commit();
-        }
+        }*/
 
     }
 
@@ -124,7 +124,7 @@ public class WishActivity extends AppCompatActivity implements
         super.onSaveInstanceState(outState);
 
         fragmentManager.putFragment(outState, "overviewfragment", overviewFragment);
-        if(detailsFragment!=null) {
+        if(detailsFragment.isAdded()) {
             fragmentManager.putFragment(outState, "detailsfragment", detailsFragment);
         }
     }
@@ -152,18 +152,9 @@ public class WishActivity extends AppCompatActivity implements
         detailsFragment = DetailsFragment.newInstance(wish, groupPosition);
 
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-
-        //orientation = this.getResources().getConfiguration().orientation;
-        if(orientation == Configuration.ORIENTATION_LANDSCAPE){
-            fragmentTransaction.replace(R.id.container2, detailsFragment, "details");
-        } else {
-            fragmentTransaction.replace(R.id.container, detailsFragment, "details");
-        }
-
-
+        fragmentTransaction.replace(R.id.container, detailsFragment, "details");
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
-
 
     }
 
@@ -226,7 +217,8 @@ public class WishActivity extends AppCompatActivity implements
                 dataService.getCurrentUserFromFirebase();
             }
             else {
-                overviewFragment.initData(dataService.getUserList());
+                if(overviewFragment.isVisible())
+                    overviewFragment.initData(dataService.getUserList());
             }
 
             //updateUserList();
@@ -255,6 +247,13 @@ public class WishActivity extends AppCompatActivity implements
     public void deleteWishList(String email){
         dataService.deleteSubscriber(email);
 
+    }
+
+    @Override
+    public ArrayList<User> getUserList() {
+        if(dataServiceBound) {
+            return dataService.getUserList();
+        }else return null;
     }
 
     public void showNotification(String name){
