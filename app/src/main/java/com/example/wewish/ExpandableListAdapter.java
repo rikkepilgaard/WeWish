@@ -36,7 +36,9 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
 
     @Override
     public int getChildrenCount(int groupPosition) {
-        return userNameList.get(groupPosition).getWishList().size();
+        if(userNameList.get(groupPosition).getWishList()==null){
+            return 0;
+        } else return userNameList.get(groupPosition).getWishList().size();
     }
 
     @Override

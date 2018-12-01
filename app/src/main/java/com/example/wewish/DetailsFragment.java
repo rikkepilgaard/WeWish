@@ -2,6 +2,7 @@ package com.example.wewish;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -59,16 +60,21 @@ public class DetailsFragment extends Fragment {
 
 
         txtWishName = view.findViewById(R.id.txtWishNameChange);
-        assert wish != null;
-        txtWishName.setText(wish.getWishName());
         txtPrice = view.findViewById(R.id.txtPriceChange);
-        txtPrice.setText(wish.getPrice());
         txtPriority = view.findViewById(R.id.txtPriorityChange);
-        txtPriority.setText(wish.getPriority());
         txtComments = view.findViewById(R.id.txtCommentsChange);
-        txtComments.setText(wish.getComments());
         txtUrl = view.findViewById(R.id.txtUrlChange);
-        txtUrl.setText(wish.getUrlName());
+
+        if(wish!=null) {
+            txtWishName.setText(wish.getWishName());
+            txtPrice.setText(wish.getPrice());
+            txtPriority.setText(wish.getPriority());
+            txtComments.setText(wish.getComments());
+            txtUrl.setText(wish.getUrlName());
+        }else{
+            txtWishName.setText(getString(R.string.no_wish));
+            txtWishName.setTypeface(null,Typeface.ITALIC);
+        }
 
         btnBack = view.findViewById(R.id.btnBack);
         btnBack.setOnClickListener(new View.OnClickListener() {
