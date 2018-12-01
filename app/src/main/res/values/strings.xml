@@ -40,4 +40,5 @@
     <string name="birthdatetext">has birthday in two weeks! Remember to buy a present</string>
     <string name="no_wish">No wish is chosen</string>
     <string name="url">Homepage:</string>
+    <string name="noURL">There is no homepage to open...</string>
 </resources>

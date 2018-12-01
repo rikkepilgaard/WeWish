@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 public class DetailsFragment extends Fragment {
@@ -105,12 +106,16 @@ public class DetailsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 String url = wish.getUrlName();
+                if(url.equals("")){
+                    Toast.makeText(getContext(), R.string.noURL, Toast.LENGTH_LONG).show();
+                }
+                else{
 
                 if (!url.startsWith("http://") && !url.startsWith("https://"))
                     url = "http://" + url;
 
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                startActivity(browserIntent);
+                startActivity(browserIntent);}
             }
         });
 

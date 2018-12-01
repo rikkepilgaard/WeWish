@@ -34,4 +34,5 @@
     <string name="alert_time_title">Fødselsdag snart!!</string>
     <string name="birthdatetext">har fødselsdag om to uger! Husk at købe en gave</string>
     <string name="no_wish">Du har ikke valgt noget ønske</string>
+    <string name="noURL">Der er ingen hjemmeside at åbne</string>
 </resources>
