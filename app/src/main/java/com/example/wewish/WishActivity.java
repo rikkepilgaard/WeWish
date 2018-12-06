@@ -8,22 +8,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.res.Configuration;
 import android.os.Build;
 import android.os.IBinder;
-import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutCompat;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 
@@ -39,15 +34,12 @@ public class WishActivity extends AppCompatActivity implements
         OverviewFragment.OnOverviewFragmentInteractionListener,
         DetailsFragment.OnDetailsFragmentInteractionListener{
 
-
     private String TAG ="WishActivity";
-    public static FragmentManager fragmentManager;
-   //private FragmentTransaction fragmentTransaction;
+    private static FragmentManager fragmentManager;
     private FrameLayout container;
-    private Button signoutButton;
     private DataService dataService;
     private boolean dataServiceBound;
-    ProgressBar progressBar;
+    private ProgressBar progressBar;
     private OverviewFragment overviewFragment;
     private DetailsFragment detailsFragment;
 
@@ -63,12 +55,13 @@ public class WishActivity extends AppCompatActivity implements
 
         fragmentManager = getSupportFragmentManager();
         container = findViewById(R.id.container);
-        signoutButton=findViewById(R.id.signout);
         progressBar = findViewById(R.id.progressbar);
 
 
         users = new ArrayList<>();
 
+        //OverviewFragment created and put on top on back stack.
+        //On orientation change fragments are reloaded from preexisting versions saved in onSaveInstanceState().
         if(container!=null){
             if(savedInstanceState!=null){
                 overviewFragment = (OverviewFragment)fragmentManager.getFragment(savedInstanceState,"overviewfragment");
@@ -84,19 +77,23 @@ public class WishActivity extends AppCompatActivity implements
             }
         }
 
-        //https://forum.unity.com/threads/reliable-way-to-detect-tablet-on-android.127184/
+        //inspiration from https://forum.unity.com/threads/reliable-way-to-detect-tablet-on-android.127184/
+
+        //Calculating screen size in inches.
         DisplayMetrics dm = getResources().getDisplayMetrics();
         float screenWidth  = dm.widthPixels / dm.xdpi;
         float screenHeight = dm.heightPixels / dm.ydpi;
         double inches = Math.sqrt(Math.pow(screenWidth, 2) +
                 Math.pow(screenHeight, 2));
 
+        //Set mode to tablet or smartphone depending on screensize.
         if (inches > 6){
             mode = MODE_TABLET;
         }else{
             mode = MODE_SMARTPHONE;
         }
 
+        //In tablet mode DetailsFragment is created and shown next to OverviewFragment
         if(mode == MODE_TABLET){
             detailsFragment = DetailsFragment.newInstance(null, 0);
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -137,6 +134,7 @@ public class WishActivity extends AppCompatActivity implements
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
+        //Saves current states of fragments
         fragmentManager.putFragment(outState, "overviewfragment", overviewFragment);
         if(detailsFragment!=null) {
             if(detailsFragment.isAdded())
@@ -150,14 +148,14 @@ public class WishActivity extends AppCompatActivity implements
             Log.d(TAG,"Broadcast received: " + intent.getAction());
             switch (intent.getAction()){
                 case "newdata":
+                    //Data received from firebase first time.
                     updateUserList();
                     break;
+
                 case "subscriberdata":
+                    //Data updated (wish list or wish added or deleted by current user)
                     overviewFragment.updateList(dataService.getUserList());
                     break;
-                case "notification":
-
-                    showNotification(intent.getStringExtra("name"));
             }
         }
     };
@@ -176,10 +174,14 @@ public class WishActivity extends AppCompatActivity implements
     }
 
     @Override
+
+    //Method called from DetailsFragment through interface.
     public void previousFragment() {
         fragmentManager.popBackStack();
     }
 
+
+    //Closes app if back is pressed from OverviewFragment instead of just removing fragment.
     @Override
     public void onBackPressed() {
         if(fragmentManager.getBackStackEntryCount()>1) {
@@ -190,7 +192,7 @@ public class WishActivity extends AppCompatActivity implements
     }
 
     public void signout(View v){
-        FirebaseAuth.getInstance().signOut();
+        dataService.signOut();
         finish();
     }
 
@@ -207,6 +209,10 @@ public class WishActivity extends AppCompatActivity implements
     }
 
     private void updateUserList(){
+
+        //Method collects wishes from all current user's subscribers through methods
+        // in dataService.
+
         users = dataService.getUserList();
 
         User currentUser = users.get(0);
@@ -214,7 +220,6 @@ public class WishActivity extends AppCompatActivity implements
         if(subscribers!=null) {
             for (String subscriber : subscribers) {
                 dataService.getSubscriberWishList(subscriber);
-
             }
 
         }
@@ -238,8 +243,6 @@ public class WishActivity extends AppCompatActivity implements
                     overviewFragment.initData(dataService.getUserList());
             }
 
-            //updateUserList();
-
             Log.d(TAG,"Connected to DataService");
         }
 
@@ -248,6 +251,10 @@ public class WishActivity extends AppCompatActivity implements
             dataServiceBound = false;
         }
     };
+
+
+    //FOLLOWING METHODS ARE CALLED FROM FRAGMENTS THROUGH INTERFACES.
+
     public void getWishListFromFirebase(String email){
        dataService.addNewWishList(email);
     }
@@ -261,6 +268,7 @@ public class WishActivity extends AppCompatActivity implements
         dataService.deleteWish(wish);
     }
 
+
     public void deleteWishList(String email){
         dataService.deleteSubscriber(email);
 
@@ -271,33 +279,6 @@ public class WishActivity extends AppCompatActivity implements
         if(dataServiceBound) {
             return dataService.getUserList();
         }else return null;
-    }
-
-    public void showNotification(String name){
-        //https://developer.android.com/training/notify-user/build-notification
-
-        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-
-            NotificationChannel channel = new NotificationChannel("101",
-                    "notiname",NotificationManager.IMPORTANCE_DEFAULT);
-
-            channel.canShowBadge();
-            if (notificationManager != null) {
-                notificationManager.createNotificationChannel(channel);
-            }
-        }
-
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this,"101")
-                .setSmallIcon(R.drawable.ic_noti_icon)
-                .setContentTitle(getString(R.string.alert_time_title))
-                .setContentText(name+" "+getString(R.string.birthdatetext));
-
-
-        if (notificationManager != null) {
-            notificationManager.notify(1,notificationBuilder.build());
-        }
-
     }
 
 }

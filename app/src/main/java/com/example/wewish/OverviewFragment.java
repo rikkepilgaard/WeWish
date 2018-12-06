@@ -101,17 +101,16 @@ public class OverviewFragment extends Fragment {
     }
 
 
+    //Creates an alert with custom layout.
     private void openNewWishListAlert() {
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
                 getActivity());
 
-        // set title
         alertDialogBuilder.setTitle(getString(R.string.add_wish_list_title));
         LayoutInflater inflater = getLayoutInflater();
         final View v = inflater.inflate(R.layout.alert_new_wishlist, null);
         alertDialogBuilder.setView(v);
 
-        // set dialog message
         alertDialogBuilder
                 .setMessage(getString(R.string.add_wish_list_description))
                 .setCancelable(false)
@@ -132,13 +131,12 @@ public class OverviewFragment extends Fragment {
                     }
                 });
 
-        // create alert dialog
         AlertDialog alertDialog = alertDialogBuilder.create();
 
-        // show it
         alertDialog.show();
     }
 
+    //Creates an alert with custom layout.
     private void openNewWishAlert() {
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
                 getActivity());
@@ -148,7 +146,6 @@ public class OverviewFragment extends Fragment {
         final View v = inflater.inflate(R.layout.alert_new_wish, null);
         alertDialogBuilder.setView(v);
 
-        // set dialog message
         alertDialogBuilder
                 .setMessage(null)
                 .setCancelable(false)
@@ -177,10 +174,8 @@ public class OverviewFragment extends Fragment {
                     }
                 });
 
-        // create alert dialog
         AlertDialog alertDialog = alertDialogBuilder.create();
 
-        // show it
         alertDialog.show();
 
     }
@@ -190,6 +185,7 @@ public class OverviewFragment extends Fragment {
         listView.setAdapter(adapter);
     }
 
+    //Make sure activity implements interface. Creates instance of interface (mListener)
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);

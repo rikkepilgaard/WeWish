@@ -1,11 +1,16 @@
 package com.example.wewish;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -41,9 +46,10 @@ import java.util.Map;
 public class DataService extends Service {
 
     private String TAG = "Dataservice";
-    AsyncTaskStart BirthdayTask;
+    private AsyncTaskStart birthdayTask;
     private Boolean running;
     private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
 
     private ArrayList<User> othersUsers;
     private String currentUserEmail;
@@ -57,6 +63,10 @@ public class DataService extends Service {
         return binder;
     }
 
+    public void signOut() {
+        mAuth.getInstance().signOut();
+    }
+
 
     public class DataServiceBinder extends Binder {
         DataService getService() {
@@ -67,20 +77,18 @@ public class DataService extends Service {
 
     private IBinder binder = new DataServiceBinder();
 
-    FirebaseFirestore db;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         db= FirebaseFirestore.getInstance();
         mAuth=FirebaseAuth.getInstance();
         running=true;
-        BirthdayTask = new AsyncTaskStart();
-        BirthdayTask.execute();
+        birthdayTask = new AsyncTaskStart();
+        birthdayTask.execute();
 
         othersUsers = new ArrayList<>();
 
-        //birthdateInTwoWeeks("13-12-1995","sofie");
-
+        //Login directly if user is logged in in Authentication.
         if(mAuth.getCurrentUser()!=null){
             login(mAuth.getCurrentUser().getEmail());
             currentUserEmail=mAuth.getCurrentUser().getEmail();
@@ -94,6 +102,7 @@ public class DataService extends Service {
 
     }
 
+    //Async task class calls method checkForBirthday() every day
     public class AsyncTaskStart extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... voids) {
@@ -120,6 +129,7 @@ public class DataService extends Service {
         Log.d(TAG,"Broadcast sent");
     }
 
+    //Create new user in Authentication.
     public void createUser(final String email, String password, final String username, final String date){
 
         mAuth.createUserWithEmailAndPassword(email, password)
@@ -142,6 +152,7 @@ public class DataService extends Service {
 
     }
 
+    //Create new user in firebase firestore.
     public void saveNewUser(final String email,final String username, final String birthdate){
         User user = new User();
         user.setEmail(email);
@@ -166,6 +177,7 @@ public class DataService extends Service {
 
     }
 
+    //Sign in through firebase authentication
     public void signIn(final String email, final String password){
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -190,6 +202,8 @@ public class DataService extends Service {
     }
 
 
+    //Gives a toast if entered email does not exist in database. If email exists, method
+    //getCurrentUserFromFirebase() is called.
     public void login(final String email){
         db.collection("users").document(email).get()
                 .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
@@ -203,6 +217,8 @@ public class DataService extends Service {
                 });
     }
 
+    //Collects details about user from firebase (username,email,birthdate) and calls method
+    //getWishes() with current user as input parameter.
     public void getCurrentUserFromFirebase(){
         currentUserEmail= mAuth.getCurrentUser().getEmail();
 
@@ -223,6 +239,8 @@ public class DataService extends Service {
 
     }
 
+    //Collects each wish from given user in firebase firestore. Calls method getSubscriber() if
+    //user is currentUser. Otherwise subscriberlist is redundant.
     public void getWishes(final User user){
         db.collection("users").document(user.getEmail()).collection("wishes").get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -247,6 +265,8 @@ public class DataService extends Service {
 
     }
 
+    //Method is called, when current user wants to add new wishlist to overview. Email is added
+    //to current user's subscriberlist and wishes for new user is collected through getWishes().
     public void addNewWishList(final String email){
 
         db.collection("users").document(email).get()
@@ -267,6 +287,7 @@ public class DataService extends Service {
     }
 
 
+    //Gets wishlist from subscriber
     public void getSubscriberWishList(final String email){
 
         db.collection("users").document(email).get()
@@ -283,6 +304,7 @@ public class DataService extends Service {
 
     }
 
+    //Gets current user's subsriberlist. Method is called when information about current user is collected.
     public void getSubscribers(final User currentUser){
         String myEmail = currentUser.getEmail();
         db.collection("users").document(myEmail).collection("subscribers").get()
@@ -301,6 +323,7 @@ public class DataService extends Service {
                 });
     }
 
+    //Adds a user to current user's subscriber list.
     public void  addSubscriber(String email){
         String myEmail= mAuth.getCurrentUser().getEmail();
         HashMap<String, String> emailHash = new HashMap<>();
@@ -323,6 +346,7 @@ public class DataService extends Service {
     }
 
 
+    //Removes a subscriber from current user's subscriberlist.
     public void deleteSubscriber(final String email) {
         //String myEmail= mAuth.getCurrentUser().getEmail();
         db.collection("users").document(currentUserEmail).collection("subscribers").document(email)
@@ -348,6 +372,8 @@ public class DataService extends Service {
                 });
     }
 
+
+    //Adds new wish to current user's wish list.
     public void addWish(final Wish wish){
         //String email=mAuth.getCurrentUser().getEmail();
         db.collection("users").document(currentUserEmail).collection("wishes").document(wish.getWishName()).set(wish)
@@ -370,6 +396,7 @@ public class DataService extends Service {
 
     }
 
+    //deletes a wish from current user's wish list.
     public void deleteWish(final Wish wish){
 
         //String myEmail= mAuth.getCurrentUser().getEmail();
@@ -397,12 +424,13 @@ public class DataService extends Service {
                 });
     }
 
+
     public ArrayList<User> getUserList(){
         return othersUsers;
     }
 
 
-
+    //Calls method checkSubscriberBirthdate when information about current user.
     public void checkForBirthday(){
         if(mAuth.getCurrentUser()!=null){
         String user = mAuth.getCurrentUser().getEmail();
@@ -420,8 +448,11 @@ public class DataService extends Service {
                     }
                 });
 
+        }
     }
-    }
+
+    //Methods collects current user's list of subscribers and calls method birthdayInTwoWeeks()
+    //for each subscriber.
     public void checkSubscriberBirthdate(final User currentUser){
         String myEmail = currentUser.getEmail();
 
@@ -454,6 +485,7 @@ public class DataService extends Service {
                 });
     }
 
+    //Sends a notification if user has birthday in two weeks.
     private void birthdateInTwoWeeks(String birthdate, String name){
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.YEAR,2000);
@@ -478,7 +510,34 @@ public class DataService extends Service {
 
         long diff = userdate.getTime()-currentDate.getTime();
         if(diff>1200960000 && diff<1209600100){
-            sendBroadcast("notification",name);
+            showNotification(name);
+        }
+
+    }
+
+    public void showNotification(String name){
+        //https://developer.android.com/training/notify-user/build-notification
+
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+            NotificationChannel channel = new NotificationChannel("101",
+                    "notiname",NotificationManager.IMPORTANCE_DEFAULT);
+
+            channel.canShowBadge();
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(channel);
+            }
+        }
+
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this,"101")
+                .setSmallIcon(R.drawable.ic_noti_icon)
+                .setContentTitle(getString(R.string.alert_time_title))
+                .setContentText(name+" "+getString(R.string.birthdatetext));
+
+
+        if (notificationManager != null) {
+            notificationManager.notify(1,notificationBuilder.build());
         }
 
     }

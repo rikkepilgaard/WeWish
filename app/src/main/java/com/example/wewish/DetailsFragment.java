@@ -102,6 +102,8 @@ public class DetailsFragment extends Fragment {
         });
 
         btnOpenUrl = view.findViewById(R.id.btnOpenUrl);
+
+        //Open webpage when user clicks button.
         btnOpenUrl.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -111,11 +113,12 @@ public class DetailsFragment extends Fragment {
                 }
                 else{
 
-                if (!url.startsWith("http://") && !url.startsWith("https://"))
-                    url = "http://" + url;
+                    if (!url.startsWith("http://") && !url.startsWith("https://"))
+                        url = "http://" + url;
 
-                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                startActivity(browserIntent);}
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    startActivity(browserIntent);
+                }
             }
         });
 
@@ -124,6 +127,7 @@ public class DetailsFragment extends Fragment {
 
 
 
+    //Make sure activity implements interface methods. Creates instance of interface (mListener).
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -143,9 +147,7 @@ public class DetailsFragment extends Fragment {
 
 
     public interface OnDetailsFragmentInteractionListener {
-
         void previousFragment();
         void deleteWish(Wish wish);
-
     }
 }
