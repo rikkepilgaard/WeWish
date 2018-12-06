@@ -34,6 +34,12 @@
     <string name="enter_email">E-mail...</string>
     <string name="mywishes">My wishes</string>
 
+    <string name="yourwish">What is your wish?</string>
+    <string name="yourprice">Do you know the price?</string>
+    <string name="wantwish">How much do you want the wish?</string>
+    <string name="addcomments">Add comments to your wish</string>
+    <string name="addurl">You can insert an url if you wish..</string>
+
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="alert_time_title">Birthday soon!!</string>

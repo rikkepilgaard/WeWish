@@ -8,7 +8,7 @@
         android:id="@+id/txtWishNameAlert"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="What is your wish?"/>
+        android:text="@string/yourwish" />
 
     <EditText
         android:id="@+id/editWishNameAlert"
@@ -20,8 +20,7 @@
         android:id="@+id/txtPriceAlert"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Do you know the price?"
-        />
+        android:text="@string/yourprice" />
 
     <EditText
         android:id="@+id/editPriceAlert"
@@ -34,7 +33,7 @@
         android:id="@+id/txtPriorityAlert"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="How much do you want the wish?" />
+        android:text="@string/wantwish" />
 
     <EditText
         android:id="@+id/editPriorityAlert"
@@ -46,7 +45,7 @@
         android:id="@+id/txtCommentsAlert"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Add comments to your wish"/>
+        android:text="@string/addcomments" />
 
     <EditText
         android:id="@+id/editCommentsAlert"
@@ -58,7 +57,7 @@
         android:id="@+id/txtUrlAlert"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="You can insert an url if you wish.."/>
+        android:text="@string/addurl" />
 
     <EditText
         android:id="@+id/editUrlAlert"
