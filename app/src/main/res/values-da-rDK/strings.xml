@@ -35,4 +35,9 @@
     <string name="birthdatetext">har fødselsdag om to uger! Husk at købe en gave</string>
     <string name="no_wish">Du har ikke valgt noget ønske</string>
     <string name="noURL">Der er ingen hjemmeside at åbne</string>
+    <string name="yourwish">Hvad er dit ønske?</string>
+    <string name="yourprice">Hvad er prisen?</string>
+    <string name="wantwish">Hvor højt prioteret er ønsket?</string>
+    <string name="addcomments">Tilføj kommentarer til ønsket</string>
+    <string name="addurl">Tilføj en eventuelt en url</string>
 </resources>
