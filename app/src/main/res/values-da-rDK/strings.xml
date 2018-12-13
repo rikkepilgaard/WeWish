@@ -37,7 +37,7 @@
     <string name="noURL">Der er ingen hjemmeside at åbne</string>
     <string name="yourwish">Hvad er dit ønske?</string>
     <string name="yourprice">Hvad er prisen?</string>
-    <string name="wantwish">Hvor højt prioteret er ønsket?</string>
+    <string name="wantwish">Hvor høj prioritet har ønsket?</string>
     <string name="addcomments">Tilføj kommentarer til ønsket</string>
-    <string name="addurl">Tilføj en eventuelt en url</string>
+    <string name="addurl">Tilføj eventuelt en url</string>
 </resources>
